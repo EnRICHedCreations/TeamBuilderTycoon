@@ -3,546 +3,110 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Team Building Tycoon - Real Estate Wholesaling Game</title>
+    <title>Team Builder Tycoon - Wholesaling Game</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: #333;
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .game-container {
-            max-width: 1400px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            overflow: hidden;
-        }
-
-        .game-header {
-            background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
-            color: white;
-            padding: 20px 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-
-        .game-title {
-            font-size: 28px;
-            font-weight: bold;
-        }
-
-        .stats-bar {
-            display: flex;
-            gap: 25px;
-            flex-wrap: wrap;
-        }
-
-        .stat {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .stat-label {
-            font-size: 11px;
-            text-transform: uppercase;
-            opacity: 0.8;
-            margin-bottom: 3px;
-        }
-
-        .stat-value {
-            font-size: 18px;
-            font-weight: bold;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #333; min-height: 100vh; padding: 20px; }
+        .game-container { max-width: 1400px; margin: 0 auto; background: white; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden; }
+        .game-header { background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%); color: white; padding: 20px 30px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+        .game-title { font-size: 28px; font-weight: bold; }
+        .stats-bar { display: flex; gap: 25px; flex-wrap: wrap; }
+        .stat { display: flex; flex-direction: column; align-items: center; }
+        .stat-label { font-size: 11px; text-transform: uppercase; opacity: 0.8; margin-bottom: 3px; }
+        .stat-value { font-size: 18px; font-weight: bold; }
         .cash { color: #48bb78; }
         .week { color: #90cdf4; }
         .deals { color: #fbd38d; }
-        .morale { color: #f687b3; }
-
-        .game-content {
-            display: grid;
-            grid-template-columns: 250px 1fr;
-            min-height: 700px;
-        }
-
-        .sidebar {
-            background: #f7fafc;
-            border-right: 2px solid #e2e8f0;
-            padding: 20px;
-        }
-
-        .nav-button {
-            width: 100%;
-            padding: 12px 15px;
-            margin-bottom: 8px;
-            background: white;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            transition: all 0.2s;
-            text-align: left;
-        }
-
-        .nav-button:hover {
-            background: #edf2f7;
-            border-color: #cbd5e0;
-        }
-
-        .nav-button.active {
-            background: #667eea;
-            color: white;
-            border-color: #667eea;
-        }
-
-        .main-content {
-            padding: 30px;
-            overflow-y: auto;
-            max-height: 700px;
-        }
-
-        .section-title {
-            font-size: 24px;
-            font-weight: bold;
-            margin-bottom: 20px;
-            color: #2d3748;
-        }
-
-        .card {
-            background: white;
-            border: 2px solid #e2e8f0;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 15px;
-        }
-
-        .card-title {
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 12px;
-            color: #2d3748;
-        }
-
-        .button {
-            padding: 10px 20px;
-            background: #667eea;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 14px;
-            transition: all 0.2s;
-        }
-
-        .button:hover {
-            background: #5568d3;
-            transform: translateY(-1px);
-        }
-
-        .button:disabled {
-            background: #cbd5e0;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .button-small {
-            padding: 6px 12px;
-            font-size: 12px;
-        }
-
-        .button-success {
-            background: #48bb78;
-        }
-
-        .button-success:hover {
-            background: #38a169;
-        }
-
-        .button-danger {
-            background: #f56565;
-        }
-
-        .button-danger:hover {
-            background: #e53e3e;
-        }
-
-        .team-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 15px;
-        }
-
-        .team-member {
-            border: 2px solid #e2e8f0;
-            border-radius: 12px;
-            padding: 15px;
-            background: #f7fafc;
-        }
-
-        .team-member-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: start;
-            margin-bottom: 10px;
-        }
-
-        .team-member-name {
-            font-weight: bold;
-            font-size: 16px;
-        }
-
-        .team-member-role {
-            font-size: 12px;
-            color: #718096;
-            margin-bottom: 8px;
-        }
-
-        .progress-bar {
-            background: #e2e8f0;
-            height: 8px;
-            border-radius: 4px;
-            overflow: hidden;
-            margin: 8px 0;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: #48bb78;
-            transition: width 0.3s;
-        }
-
-        .hire-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 15px;
-        }
-
-        .hire-card {
-            border: 2px solid #e2e8f0;
-            border-radius: 12px;
-            padding: 20px;
-            background: white;
-            transition: all 0.2s;
-        }
-
-        .hire-card:hover {
-            border-color: #667eea;
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
-        }
-
-        .deal-pipeline {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-top: 20px;
-        }
-
-        .pipeline-column {
-            background: #f7fafc;
-            border-radius: 12px;
-            padding: 15px;
-            min-height: 200px;
-        }
-
-        .pipeline-title {
-            font-weight: bold;
-            margin-bottom: 12px;
-            color: #2d3748;
-            font-size: 14px;
-        }
-
-        .deal-card {
-            background: white;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 12px;
-            margin-bottom: 8px;
-            font-size: 13px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .deal-card:hover {
-            border-color: #667eea;
-            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
-        }
-
-        .deal-card.selected {
-            border-color: #667eea;
-            background: #edf2f7;
-        }
-
-        .deal-value {
-            font-weight: bold;
-            color: #48bb78;
-            margin-top: 5px;
-        }
-
-        .action-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 15px;
-        }
-
-        .action-card {
-            border: 2px solid #e2e8f0;
-            border-radius: 12px;
-            padding: 20px;
-            background: white;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .action-card:hover {
-            border-color: #667eea;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
-        }
-
-        .action-title {
-            font-weight: bold;
-            font-size: 16px;
-            margin-bottom: 8px;
-        }
-
-        .action-cost {
-            color: #718096;
-            font-size: 13px;
-            margin-bottom: 8px;
-        }
-
-        .time-badge {
-            display: inline-block;
-            background: #fbd38d;
-            color: #744210;
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: white;
-            border-left: 4px solid #48bb78;
-            padding: 15px 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            max-width: 350px;
-            animation: slideIn 0.3s;
-            z-index: 1000;
-        }
-
-        @keyframes slideIn {
-            from {
-                transform: translateX(400px);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 2000;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal.active {
-            display: flex;
-        }
-
-        .modal-content {
-            background: white;
-            border-radius: 16px;
-            padding: 30px;
-            max-width: 500px;
-            width: 90%;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-
-        .modal-title {
-            font-size: 24px;
-            font-weight: bold;
-            margin-bottom: 15px;
-        }
-
-        .modal-buttons {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        .info-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid #e2e8f0;
-        }
-
-        .info-label {
-            color: #718096;
-            font-size: 14px;
-        }
-
-        .info-value {
-            font-weight: 600;
-            font-size: 14px;
-        }
-
-        .tutorial-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.85);
-            z-index: 3000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .tutorial-box {
-            background: white;
-            border-radius: 16px;
-            padding: 40px;
-            max-width: 600px;
-            width: 90%;
-            text-align: center;
-        }
-
-        .tutorial-box h2 {
-            font-size: 32px;
-            margin-bottom: 20px;
-            color: #2d3748;
-        }
-
-        .tutorial-box p {
-            font-size: 16px;
-            line-height: 1.6;
-            color: #4a5568;
-            margin-bottom: 25px;
-        }
-
-        .property-list {
-            max-height: 300px;
-            overflow-y: auto;
-            margin: 15px 0;
-        }
-
-        .property-option {
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 12px;
-            margin-bottom: 8px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .property-option:hover {
-            border-color: #667eea;
-            background: #f7fafc;
-        }
-
-        .property-option.selected {
-            border-color: #667eea;
-            background: #edf2f7;
-        }
-
-        @media (max-width: 768px) {
-            .game-content {
-                grid-template-columns: 1fr;
-            }
-
-            .sidebar {
-                border-right: none;
-                border-bottom: 2px solid #e2e8f0;
-            }
-        }
+        .game-content { display: grid; grid-template-columns: 250px 1fr; min-height: 700px; }
+        .sidebar { background: #f7fafc; border-right: 2px solid #e2e8f0; padding: 20px; }
+        .nav-button { width: 100%; padding: 12px 15px; margin-bottom: 8px; background: white; border: 2px solid #e2e8f0; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.2s; text-align: left; }
+        .nav-button:hover { background: #edf2f7; border-color: #cbd5e0; }
+        .nav-button.active { background: #667eea; color: white; border-color: #667eea; }
+        .main-content { padding: 30px; overflow-y: auto; max-height: 700px; }
+        .section-title { font-size: 24px; font-weight: bold; margin-bottom: 20px; color: #2d3748; }
+        .card { background: white; border: 2px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-bottom: 15px; }
+        .card-title { font-size: 18px; font-weight: bold; margin-bottom: 12px; color: #2d3748; }
+        .button { padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 14px; transition: all 0.2s; }
+        .button:hover:not(:disabled) { background: #5568d3; transform: translateY(-1px); }
+        .button:disabled { background: #cbd5e0; cursor: not-allowed; transform: none; }
+        .button-small { padding: 6px 12px; font-size: 12px; }
+        .button-success { background: #48bb78; }
+        .button-success:hover:not(:disabled) { background: #38a169; }
+        .button-danger { background: #f56565; }
+        .button-danger:hover { background: #e53e3e; }
+        .team-grid, .hire-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; }
+        .team-member, .hire-card { border: 2px solid #e2e8f0; border-radius: 12px; padding: 15px; background: #f7fafc; }
+        .hire-card { background: white; transition: all 0.2s; }
+        .hire-card:hover { border-color: #667eea; box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15); }
+        .team-member-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px; }
+        .team-member-name { font-weight: bold; font-size: 16px; }
+        .team-member-role { font-size: 12px; color: #718096; margin-bottom: 8px; }
+        .progress-bar { background: #e2e8f0; height: 8px; border-radius: 4px; overflow: hidden; margin: 8px 0; }
+        .progress-fill { height: 100%; background: #48bb78; transition: width 0.3s; }
+        .deal-pipeline { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 20px; }
+        .pipeline-column { background: #f7fafc; border-radius: 12px; padding: 15px; min-height: 200px; }
+        .pipeline-title { font-weight: bold; margin-bottom: 12px; color: #2d3748; font-size: 14px; }
+        .deal-card { background: white; border: 2px solid #e2e8f0; border-radius: 8px; padding: 12px; margin-bottom: 8px; font-size: 13px; cursor: pointer; transition: all 0.2s; }
+        .deal-card:hover { border-color: #667eea; box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15); }
+        .deal-value { font-weight: bold; color: #48bb78; margin-top: 5px; }
+        .action-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px; }
+        .action-card { border: 2px solid #e2e8f0; border-radius: 12px; padding: 20px; background: white; cursor: pointer; transition: all 0.2s; }
+        .action-card:hover:not(.disabled) { border-color: #667eea; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15); }
+        .action-card.disabled { opacity: 0.5; cursor: not-allowed; }
+        .action-title { font-weight: bold; font-size: 16px; margin-bottom: 8px; }
+        .action-cost { color: #718096; font-size: 13px; margin-bottom: 8px; }
+        .time-badge { display: inline-block; background: #fbd38d; color: #744210; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+        .cost-badge { display: inline-block; background: #48bb78; color: white; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; margin-left: 5px; }
+        .locked-badge { display: inline-block; background: #f56565; color: white; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; margin-top: 5px; }
+        .notification { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; border-left: 6px solid #48bb78; padding: 25px 35px; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.3); max-width: 500px; font-size: 18px; font-weight: 600; animation: popIn 0.3s; z-index: 1000; text-align: center; }
+        @keyframes popIn { from { transform: translate(-50%, -50%) scale(0.8); opacity: 0; } to { transform: translate(-50%, -50%) scale(1); opacity: 1; } }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center; }
+        .modal.active { display: flex; }
+        .modal-content { background: white; border-radius: 16px; padding: 30px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto; }
+        .modal-title { font-size: 24px; font-weight: bold; margin-bottom: 15px; }
+        .modal-buttons { display: flex; gap: 10px; margin-top: 20px; }
+        .info-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e2e8f0; }
+        .info-label { color: #718096; font-size: 14px; }
+        .info-value { font-weight: 600; font-size: 14px; }
+        .property-list { max-height: 300px; overflow-y: auto; margin: 15px 0; }
+        .property-option { border: 2px solid #e2e8f0; border-radius: 8px; padding: 12px; margin-bottom: 8px; cursor: pointer; transition: all 0.2s; }
+        .property-option:hover { border-color: #667eea; background: #f7fafc; }
+        .property-option.selected { border-color: #667eea; background: #edf2f7; }
+        @media (max-width: 768px) { .game-content { grid-template-columns: 1fr; } .sidebar { border-right: none; border-bottom: 2px solid #e2e8f0; } }
     </style>
 </head>
 <body>
     <div class="game-container">
         <div class="game-header">
-            <div class="game-title">🏢 Team Building Tycoon</div>
+            <div class="game-title">🏢 Team Builder Tycoon - Build Your Wholesaling Empire</div>
             <div class="stats-bar">
-                <div class="stat">
-                    <div class="stat-label">Cash</div>
-                    <div class="stat-value cash">$<span id="cash">5000</span></div>
-                </div>
-                <div class="stat">
-                    <div class="stat-label">Week</div>
-                    <div class="stat-value week"><span id="week">1</span></div>
-                </div>
-                <div class="stat">
-                    <div class="stat-label">Deals Closed</div>
-                    <div class="stat-value deals"><span id="dealsCount">0</span></div>
-                </div>
-                <div class="stat">
-                    <div class="stat-label">Team Morale</div>
-                    <div class="stat-value morale"><span id="morale">100</span>%</div>
-                </div>
-                <div class="stat">
-                    <div class="stat-label">Time Left</div>
-                    <div class="stat-value"><span id="timeLeft">40</span>h</div>
-                </div>
+                <div class="stat"><div class="stat-label">Cash</div><div class="stat-value cash">$<span id="cash">0</span></div></div>
+                <div class="stat"><div class="stat-label">Week</div><div class="stat-value week"><span id="week">1</span></div></div>
+                <div class="stat"><div class="stat-label">Deals Closed</div><div class="stat-value deals"><span id="dealsCount">0</span></div></div>
+                <div class="stat"><div class="stat-label">Time Left</div><div class="stat-value"><span id="timeLeft">40</span>h</div></div>
             </div>
         </div>
-
         <div class="game-content">
             <div class="sidebar">
                 <button class="nav-button active" data-section="actions">📋 Actions</button>
-                <button class="nav-button" data-section="deals">💼 Deal Pipeline</button>
-                <button class="nav-button" data-section="team">👥 My Team</button>
+                <button class="nav-button" data-section="deals">💼 Deals</button>
+                <button class="nav-button" data-section="team">👥 Team</button>
                 <button class="nav-button" data-section="hire">➕ Hire</button>
+                <button class="nav-button" data-section="upgrades">⬆️ Upgrades</button>
                 <button class="nav-button" data-section="settings">⚙️ Settings</button>
             </div>
-
             <div class="main-content">
                 <div id="content-actions" class="content-section">
                     <div class="section-title">Weekly Actions</div>
                     <div class="action-grid" id="actionGrid"></div>
                     <div style="margin-top: 30px;">
-                        <button class="button button-success" id="advanceWeekBtn" style="font-size: 16px; padding: 15px 30px;">
-                            ⏭️ Advance to Next Week
-                        </button>
+                        <button class="button button-success" id="advanceWeekBtn" style="font-size: 16px; padding: 15px 30px;">⏭️ Advance to Next Week</button>
                     </div>
                 </div>
-
                 <div id="content-deals" class="content-section" style="display:none;">
                     <div class="section-title">Deal Pipeline</div>
                     <div class="deal-pipeline" id="dealPipeline"></div>
                 </div>
-
                 <div id="content-team" class="content-section" style="display:none;">
                     <div class="section-title">My Team</div>
                     <div class="team-grid" id="teamGrid"></div>
@@ -552,12 +116,14 @@
                         <div>You haven't hired anyone yet. Check the Hire tab when you're ready to build your team.</div>
                     </div>
                 </div>
-
                 <div id="content-hire" class="content-section" style="display:none;">
                     <div class="section-title">Hire Team Members</div>
                     <div class="hire-grid" id="hireGrid"></div>
                 </div>
-
+                <div id="content-upgrades" class="content-section" style="display:none;">
+                    <div class="section-title">Upgrades & Tools</div>
+                    <div class="hire-grid" id="upgradeGrid"></div>
+                </div>
                 <div id="content-settings" class="content-section" style="display:none;">
                     <div class="section-title">Game Settings</div>
                     <div class="card">
@@ -565,17 +131,10 @@
                         <p style="margin-bottom: 15px; color: #718096;">Start a new game from scratch. This will delete all progress.</p>
                         <button class="button button-danger" id="resetBtn">Reset Game</button>
                     </div>
-                    <div class="card">
-                        <div class="card-title">About</div>
-                        <p style="color: #718096; line-height: 1.6;">
-                            Team Building Tycoon is a real estate wholesaling simulation game. Build your empire by hiring the right team, managing your budget, and closing deals. Good luck!
-                        </p>
-                    </div>
                 </div>
             </div>
         </div>
     </div>
-
     <div id="modal" class="modal">
         <div class="modal-content">
             <div class="modal-title" id="modalTitle"></div>
@@ -585,7 +144,6 @@
             </div>
         </div>
     </div>
-
     <div id="propertyModal" class="modal">
         <div class="modal-content">
             <div class="modal-title" id="propertyModalTitle">Select a Property</div>
@@ -596,672 +154,519 @@
             </div>
         </div>
     </div>
-
     <script>
-        const gameState = {
-            cash: 5000,
-            week: 1,
-            timeLeft: 40,
-            dealsClosedTotal: 0,
-            team: [],
-            deals: [],
-            firstDealClosed: false
+        const g = { cash: 0, week: 1, timeLeft: 40, dealsClosedTotal: 0, team: [], deals: [], upgrades: {} };
+        let sel = null, pend = null;
+
+        const mkOpts = [
+            { id: 'gov', name: 'Pull Government List', cost: 0, leads: [3, 8], desc: 'Free public records', time: 3 },
+            { id: 'ppl', name: 'Pay Per Lead', cost: 250, leads: 1, desc: '$250/lead', req: 250 },
+            { id: 'ppc', name: 'Pay Per Click', cost: 2500, leads: [15, 30], desc: 'Weekly PPC ($2500)', req: 2500, time: 2 }
+        ];
+
+        const contact = [
+            { id: 'call', name: 'Cold Call Leads', time: 2, cost: 0, desc: 'Call 10 leads', cnt: 10, rate: [0.2, 0.5] },
+            { id: 'text', name: 'Text Blasting', time: 0.5, cost: 10, desc: '1000 texts ($10)', cnt: 1000, rate: [0.003, 0.012], req: 10 },
+            { id: 'drip', name: 'Text Blast Drip', time: 1, cost: 100, desc: 'Drip campaign ($100)', cnt: 1000, rate: [0.04, 0.07], req: 100, reqUpg: 'drip' }
+        ];
+
+        const upg = {
+            drip: { name: 'Drip SMS', cost: 500, ben: 'Unlock drip campaign + 2x basic text rate', type: 'text' },
+            enzo: { name: 'Enzo Dialer', cost: 225, ben: '+30h/week', type: 'call', monthly: true },
+            maxd: { name: 'MaxDispo.com', cost: 0, ben: '+50% deal value', type: 'dispo', reqD: 5 }
         };
 
-        let selectedProperty = null;
-        let pendingAction = null;
-
-        const teamTemplates = {
-            va: {
-                name: 'Virtual Assistant',
-                role: 'VA',
-                cost: 1000,
-                timeSaved: 20,
-                description: 'Handles cold calling, lead qualification, and data entry',
-                efficiency: 50,
-                morale: 100,
-                leadsPerWeek: 15
-            },
-            acquisitions: {
-                name: 'Acquisitions Manager',
-                role: 'Acquisitions',
-                cost: 2500,
-                timeSaved: 15,
-                description: 'Sources and analyzes deals, negotiates with sellers',
-                efficiency: 50,
-                morale: 100,
-                dealsPerMonth: 3,
-                requiresDeals: 3
-            },
-            dispositions: {
-                name: 'Dispositions Specialist',
-                role: 'Dispositions',
-                cost: 2000,
-                timeSaved: 10,
-                description: 'Builds buyer list, packages deals, faster turnaround',
-                efficiency: 50,
-                morale: 100,
-                bonusPerDeal: 1500,
-                requiresDeals: 5
-            },
-            coordinator: {
-                name: 'Transaction Coordinator',
-                role: 'Coordinator',
-                cost: 1500,
-                timeSaved: 15,
-                description: 'Manages contracts, coordinates with title, tracks deadlines',
-                efficiency: 50,
-                morale: 100,
-                requiresDeals: 4
-            }
+        const teams = {
+            va: { name: 'Virtual Assistant', role: 'VA', cost: 800, time: 20, desc: 'Cold calling & data', eff: 50, mor: 100, leads: 15, reqC: 2400, reqD: 3 },
+            acq: { name: 'Acquisitions Manager', role: 'Acq', cost: 2500, time: 15, desc: 'Sources deals', eff: 50, mor: 100, deals: 3, reqC: 7500, reqD: 5 },
+            dis: { name: 'Dispositions', role: 'Dis', cost: 2000, time: 10, desc: 'Buyer list', eff: 50, mor: 100, bonus: 1500, reqC: 6000, reqD: 7 }
         };
 
-        const actions = [
-            { id: 'market', name: 'Set Up Marketing Campaign', time: 5, cost: 500, desc: 'Create marketing materials and generate leads', requiresProperty: false },
-            { id: 'calling', name: 'Cold Call Leads', time: 2, cost: 0, desc: 'Call potential sellers from your list', requiresProperty: false },
-            { id: 'analyze', name: 'Analyze Property', time: 1.5, cost: 0, desc: 'Evaluate a deal and run comps', requiresProperty: true, requiredStage: 'qualified' },
-            { id: 'showing', name: 'Property Showing', time: 2, cost: 0, desc: 'Meet seller and walk the property', requiresProperty: true, requiredStage: 'analyzed' },
-            { id: 'revise', name: 'Revise Offer', time: 1, cost: 0, desc: 'Adjust numbers and present new offer', requiresProperty: true, requiredStage: 'revision' },
-            { id: 'followup', name: 'Follow Up with Seller', time: 1, cost: 0, desc: 'Check in and build rapport with seller', requiresProperty: true, requiredStage: 'followup' },
-            { id: 'negotiate', name: 'Negotiate Contract', time: 3, cost: 0, desc: 'Work out deal terms with seller', requiresProperty: true, requiredStage: 'negotiation' },
-            { id: 'buyers', name: 'Contact Buyers', time: 4, cost: 0, desc: 'Reach out to buyers list to sell deal', requiresProperty: true, requiredStage: 'contract' },
-            { id: 'admin', name: 'Administrative Tasks', time: 2, cost: 0, desc: 'Paperwork, emails, and misc tasks', requiresProperty: false }
+        const acts = [
+            { id: 'analyze', name: 'Analyze Property', time: 1.5, cost: 0, desc: 'Run comps', prop: true, stage: 'qualified' },
+            { id: 'show', name: 'Property Showing', time: 2, cost: 0, desc: 'Meet seller', prop: true, stage: 'analyzed' },
+            { id: 'follow', name: 'Follow Up', time: 1, cost: 0, desc: 'Build rapport', prop: true, stage: 'followup' },
+            { id: 'negotiate', name: 'Negotiate', time: 3, cost: 0, desc: 'Work terms', prop: true, stage: 'negotiation' },
+            { id: 'revise', name: 'Revise Offer', time: 1, cost: 0, desc: 'New offer', prop: true, stage: 'revision' },
+            { id: 'buyers', name: 'Contact Buyers', time: 4, cost: 0, desc: 'Reach buyers', prop: true, stage: 'contract' },
+            { id: 'maxdispo', name: 'Dispo with MaxDispo.com', time: 0.5, cost: 0, desc: 'Quick close (50% fee)', prop: true, stage: 'contract', minVal: 10000 },
+            { id: 'admin', name: 'Admin Tasks', time: 2, cost: 0, desc: 'Paperwork', prop: false }
         ];
 
         function init() {
-            loadGame();
-            setupEventListeners();
-            renderActions();
+            load();
+            document.querySelectorAll('.nav-button').forEach(b => b.addEventListener('click', function() { showSec(this.dataset.section); }));
+            document.getElementById('advanceWeekBtn').addEventListener('click', advWeek);
+            document.getElementById('resetBtn').addEventListener('click', reset);
+            document.getElementById('closeModalBtn').addEventListener('click', closeMod);
+            document.getElementById('confirmPropertyBtn').addEventListener('click', confirmProp);
+            document.getElementById('cancelPropertyBtn').addEventListener('click', closePropMod);
+            renderActs();
             renderTeam();
-            renderHireOptions();
+            renderHire();
+            renderUpg();
             renderDeals();
             updateUI();
-
-            if (gameState.week === 1 && gameState.dealsClosedTotal === 0 && !localStorage.getItem('tutorialShown')) {
-                showTutorial();
-            }
         }
 
-        function setupEventListeners() {
-            document.querySelectorAll('.nav-button').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    showSection(this.dataset.section);
-                });
-            });
-
-            document.getElementById('advanceWeekBtn').addEventListener('click', advanceWeek);
-            document.getElementById('resetBtn').addEventListener('click', resetGame);
-            document.getElementById('closeModalBtn').addEventListener('click', closeModal);
-            document.getElementById('confirmPropertyBtn').addEventListener('click', confirmPropertySelection);
-            document.getElementById('cancelPropertyBtn').addEventListener('click', closePropertyModal);
+        function showSec(s) {
+            document.querySelectorAll('.content-section').forEach(e => e.style.display = 'none');
+            document.querySelectorAll('.nav-button').forEach(b => b.classList.remove('active'));
+            document.getElementById('content-' + s).style.display = 'block';
+            document.querySelector('[data-section="' + s + '"]').classList.add('active');
         }
 
-        function showSection(section) {
-            document.querySelectorAll('.content-section').forEach(el => el.style.display = 'none');
-            document.querySelectorAll('.nav-button').forEach(btn => btn.classList.remove('active'));
-
-            document.getElementById('content-' + section).style.display = 'block';
-            document.querySelector('[data-section="' + section + '"]').classList.add('active');
-        }
-
-        function showTutorial() {
-            const overlay = document.createElement('div');
-            overlay.className = 'tutorial-overlay';
-            overlay.innerHTML = `
-                <div class="tutorial-box">
-                    <h2>Welcome to Team Building Tycoon!</h2>
-                    <p>You're starting as a solo real estate wholesaler with $5,000 and 40 hours per week. Your goal is to find discounted properties, get them under contract, and assign those contracts to buyers for a profit.</p>
-                    <p><strong>Your First Steps:</strong><br>
-                    1. Set up marketing to generate leads ($500)<br>
-                    2. Call leads to qualify them<br>
-                    3. Analyze qualified properties<br>
-                    4. Negotiate contracts and find buyers<br>
-                    5. Close deals to earn money<br>
-                    6. Hire team members to scale up!</p>
-                    <p>Each action takes time. Plan your week carefully!</p>
-                    <button class="button" id="tutorialBtn">Let's Go!</button>
-                </div>
-            `;
-            document.body.appendChild(overlay);
-            overlay.querySelector('#tutorialBtn').addEventListener('click', function() {
-                overlay.remove();
-            });
-            localStorage.setItem('tutorialShown', 'true');
-        }
-
-        function renderActions() {
+        function renderActs() {
             const grid = document.getElementById('actionGrid');
-            grid.innerHTML = actions.map(action => {
-                const canAfford = gameState.cash >= action.cost;
-                const hasTime = gameState.timeLeft >= action.time;
-                const canPerform = canAfford && hasTime;
+            let h = '';
 
-                return `
-                <div class="action-card ${!canPerform ? 'opacity-50' : ''}" data-action="${action.id}">
-                    <div class="action-title">${action.name}</div>
-                    <div class="action-cost">${action.desc}</div>
-                    <div style="margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap;">
-                        <span class="time-badge">⏱️ ${action.time}h</span>
-                        ${action.cost > 0 ? `<span class="time-badge" style="background: #48bb78; color: white;">💰 $${action.cost}</span>` : ''}
-                    </div>
-                </div>
-            `;
-            }).join('');
-
-            document.querySelectorAll('.action-card').forEach(card => {
-                card.addEventListener('click', function() {
-                    performAction(this.dataset.action);
-                });
+            mkOpts.forEach(o => {
+                const hasTime = !o.time || g.timeLeft >= o.time;
+                const ok = g.cash >= o.cost && hasTime;
+                const lock = o.req && g.dealsClosedTotal === 0 && g.cash < o.req;
+                const leadsTxt = Array.isArray(o.leads) ? `${o.leads[0]}-${o.leads[1]}` : o.leads;
+                h += `<div class="action-card ${!ok || lock ? 'disabled' : ''}" onclick="${ok && !lock ? `doMkt('${o.id}')` : ''}">
+                    <div class="action-title">${o.name}</div><div class="action-cost">${o.desc}</div>
+                    <div style="margin-top:10px;">${o.time ? '<span class="time-badge">⏱️ ' + o.time + 'h</span>' : ''}<span class="cost-badge">💰 ${o.cost === 0 ? 'FREE' : '$' + o.cost}</span>
+                    <span class="time-badge">📥 ${leadsTxt}</span>${lock ? '<div class="locked-badge">Need $' + o.req + '</div>' : ''}</div></div>`;
             });
+
+            contact.forEach(o => {
+                const hasUpg = !o.reqUpg || g.upgrades[o.reqUpg];
+                const ok = g.cash >= o.cost && g.timeLeft >= o.time && hasUpg;
+                const lock = (o.req && g.cash < o.req) || (o.reqUpg && !g.upgrades[o.reqUpg]);
+                const lockMsg = o.reqUpg && !g.upgrades[o.reqUpg] ? `Need ${upg[o.reqUpg].name}` : (o.req && g.cash < o.req ? '$' + o.cost : '');
+                h += `<div class="action-card ${!ok || lock ? 'disabled' : ''}" onclick="${ok && !lock ? `doContact('${o.id}')` : ''}">
+                    <div class="action-title">${o.name}</div><div class="action-cost">${o.desc}</div>
+                    <div style="margin-top:10px;"><span class="time-badge">⏱️ ${o.time}h</span>
+                    <span class="cost-badge">💰 ${o.cost === 0 ? 'FREE' : '$' + o.cost}</span>${lock && lockMsg ? '<div class="locked-badge">' + lockMsg + '</div>' : ''}</div></div>`;
+            });
+
+            acts.forEach(a => {
+                const ok = g.cash >= a.cost && g.timeLeft >= a.time;
+                h += `<div class="action-card ${!ok ? 'disabled' : ''}" onclick="${ok ? `doAct('${a.id}')` : ''}">
+                    <div class="action-title">${a.name}</div><div class="action-cost">${a.desc}</div>
+                    <div style="margin-top:10px;"><span class="time-badge">⏱️ ${a.time}h</span>${a.cost > 0 ? '<span class="cost-badge">💰 $' + a.cost + '</span>' : ''}</div></div>`;
+            });
+
+            grid.innerHTML = h;
         }
 
-        function performAction(actionId) {
-            const action = actions.find(a => a.id === actionId);
-            if (!action) return;
+        function doMkt(id) {
+            const o = mkOpts.find(x => x.id === id);
+            if (g.cash < o.cost || (o.time && g.timeLeft < o.time)) return;
+            g.cash -= o.cost;
+            if (o.time) g.timeLeft -= o.time;
 
-            if (gameState.timeLeft < action.time) {
-                showNotification('Not enough time left this week!', 'error');
+            // 25% chance of getting 0 leads (except for PPL)
+            if (id !== 'ppl' && Math.random() < 0.25) {
+                notify(`${o.name}: No leads.`);
+                updateUI();
+                renderActs();
+                renderDeals();
+                save();
                 return;
             }
 
-            if (gameState.cash < action.cost) {
-                showNotification('Not enough cash!', 'error');
+            const leadCnt = Array.isArray(o.leads) ? Math.floor(Math.random() * (o.leads[1] - o.leads[0] + 1)) + o.leads[0] : o.leads;
+            genLeads(leadCnt);
+            notify(`${o.name}: ${leadCnt} leads!`, 'advance');
+            updateUI();
+            renderActs();
+            renderDeals();
+            save();
+        }
+
+        function doContact(id) {
+            const o = contact.find(x => x.id === id);
+            if (g.timeLeft < o.time || g.cash < o.cost) return;
+
+            const leadPool = g.deals.filter(d => d.stage === 'lead');
+            const toContact = Math.min(o.cnt, leadPool.length);
+
+            if (toContact === 0) {
+                notify(`${o.name}: No leads to contact!`);
                 return;
             }
 
-            if (action.requiresProperty) {
-                showPropertySelectionModal(action);
+            g.timeLeft -= o.time;
+            g.cash -= o.cost;
+
+            // Take leads from pool
+            const contacted = leadPool.slice(0, toContact);
+            g.deals = g.deals.filter(d => !contacted.includes(d));
+
+            // 25% chance of getting 0 qualified
+            if (Math.random() < 0.25) {
+                notify(`${o.name}: Contacted ${toContact}, none qualified.`);
+                updateUI();
+                renderActs();
+                renderDeals();
+                save();
+                return;
+            }
+
+            let r = Array.isArray(o.rate) ? Math.random() * (o.rate[1] - o.rate[0]) + o.rate[0] : o.rate;
+            if (id === 'text' && g.upgrades.drip) r *= 2;
+            let q = Math.floor(toContact * r);
+
+            if (q > 0) {
+                // Convert contacted leads to qualified
+                contacted.slice(0, q).forEach(d => {
+                    d.stage = 'qualified';
+                    g.deals.push(d);
+                });
+                notify(`${o.name}: ${q} of ${toContact} qualified!`, 'advance');
             } else {
-                executeAction(action, null);
+                notify(`${o.name}: Contacted ${toContact}, none qualified.`);
             }
+
+            updateUI();
+            renderActs();
+            renderDeals();
+            save();
         }
 
-        function showPropertySelectionModal(action) {
-            const eligibleDeals = gameState.deals.filter(d => d.stage === action.requiredStage);
-
-            if (eligibleDeals.length === 0) {
-                showNotification(`No properties in ${action.requiredStage} stage available.`, 'error');
+        function doAct(id) {
+            const a = acts.find(x => x.id === id);
+            if (!a || g.timeLeft < a.time || g.cash < a.cost) {
+                notify('Not enough time/cash!');
                 return;
             }
+            if (a.prop) {
+                showPropModal(a);
+            } else {
+                execAct(a, null);
+            }
+        }
 
-            pendingAction = action;
-            const modal = document.getElementById('propertyModal');
-            const body = document.getElementById('propertyModalBody');
-
-            document.getElementById('propertyModalTitle').textContent = `Select a Property - ${action.name}`;
-
-            body.innerHTML = `
-                <div style="margin-bottom: 15px; color: #718096;">
-                    Select which property you'd like to work on:
-                </div>
-                <div class="property-list">
-                    ${eligibleDeals.map(deal => `
-                        <div class="property-option" data-deal-id="${deal.id}">
-                            <div style="font-weight: bold; margin-bottom: 4px;">${deal.address}</div>
-                            <div style="font-size: 13px; color: #718096;">
-                                Potential Fee: <span style="color: #48bb78; font-weight: bold;">$${deal.value}</span>
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
-            `;
-
-            document.querySelectorAll('.property-option').forEach(option => {
-                option.addEventListener('click', function() {
-                    document.querySelectorAll('.property-option').forEach(o => o.classList.remove('selected'));
+        function showPropModal(a) {
+            let deals = g.deals.filter(d => d.stage === a.stage);
+            if (a.minVal) deals = deals.filter(d => d.value >= a.minVal);
+            if (deals.length === 0) {
+                notify(a.minVal ? `No properties over $${a.minVal.toLocaleString()}.` : `No ${a.stage} properties.`);
+                return;
+            }
+            pend = a;
+            const m = document.getElementById('propertyModal');
+            const b = document.getElementById('propertyModalBody');
+            document.getElementById('propertyModalTitle').textContent = `Select - ${a.name}`;
+            b.innerHTML = `<div style="margin-bottom:15px;color:#718096;">Select property:</div><div class="property-list">
+                ${deals.map(d => `<div class="property-option" data-id="${d.id}">
+                <div style="font-weight:bold;margin-bottom:4px;">${d.address}</div>
+                <div style="font-size:13px;color:#718096;">Fee: <span style="color:#48bb78;font-weight:bold;">$${d.value}</span></div></div>`).join('')}</div>`;
+            document.querySelectorAll('.property-option').forEach(o => {
+                o.addEventListener('click', function() {
+                    document.querySelectorAll('.property-option').forEach(x => x.classList.remove('selected'));
                     this.classList.add('selected');
-                    selectedProperty = eligibleDeals.find(d => d.id === parseInt(this.dataset.dealId));
+                    sel = deals.find(d => d.id === parseInt(this.dataset.id));
                 });
             });
-
-            modal.classList.add('active');
+            m.classList.add('active');
         }
 
-        function confirmPropertySelection() {
-            if (!selectedProperty || !pendingAction) return;
-
-            executeAction(pendingAction, selectedProperty);
-            closePropertyModal();
+        function confirmProp() {
+            if (!sel || !pend) return;
+            execAct(pend, sel);
+            closePropMod();
         }
 
-        function closePropertyModal() {
+        function closePropMod() {
             document.getElementById('propertyModal').classList.remove('active');
-            selectedProperty = null;
-            pendingAction = null;
+            sel = null;
+            pend = null;
         }
 
-        function executeAction(action, property) {
-            gameState.timeLeft -= action.time;
-            gameState.cash -= action.cost;
+        function execAct(a, p) {
+            g.timeLeft -= a.time;
+            g.cash -= a.cost;
 
-            switch(action.id) {
-                case 'market':
-                    const leadsGen = Math.floor(Math.random() * 5) + 5;
-                    generateLeads(leadsGen);
-                    showNotification(`Marketing campaign launched! Generated ${leadsGen} new leads.`);
-                    break;
-                case 'calling':
-                    let qualifiedCount = 0;
-                    // Call 10 leads, each has 40% chance to qualify
-                    for (let i = 0; i < 10; i++) {
-                        if (Math.random() > 0.6) {
-                            qualifiedCount++;
-                        }
-                    }
-
-                    if (qualifiedCount > 0) {
-                        generateLeads(qualifiedCount, 'qualified');
-                        showNotification(`Called 10 leads - ${qualifiedCount} qualified and interested!`);
-                    } else {
-                        showNotification('Called 10 leads - none were interested this time.');
-                    }
-                    break;
+            switch(a.id) {
                 case 'analyze':
-                    if (property && Math.random() > 0.3) {
-                        property.stage = 'analyzed';
-                        showNotification(`${property.address} analyzed! Numbers look good.`);
+                    if (p && Math.random() > 0.3) {
+                        p.stage = 'analyzed';
+                        notify(`${p.address} analyzed!`, 'advance');
                     } else {
-                        gameState.deals = gameState.deals.filter(d => d.id !== property.id);
-                        showNotification('Analyzed property. Numbers don\'t work - deal removed.');
+                        g.deals = g.deals.filter(d => d.id !== p.id);
+                        notify('Numbers don\'t work.');
                     }
                     break;
-                case 'showing':
-                    if (property && Math.random() > 0.5) {
-                        // Showing went well - move to negotiation stage
-                        property.stage = 'negotiation';
-                        showNotification(`${property.address} - Good showing! Seller is interested. Time to negotiate.`);
+                case 'show':
+                    if (p && Math.random() > 0.5) {
+                        p.stage = 'negotiation';
+                        notify(`${p.address} interested!`, 'advance');
                     } else {
-                        // Showing didn't go well - needs follow up
-                        property.stage = 'followup';
-                        showNotification(`${property.address} - Seller needs time to think. Follow up in a few days.`);
+                        p.stage = 'followup';
+                        notify(`${p.address} needs time.`);
                     }
                     break;
-                case 'followup':
-                    if (property && Math.random() > 0.6) {
-                        // Follow up successful - ready to negotiate
-                        property.stage = 'negotiation';
-                        showNotification(`${property.address} - Follow up went great! Seller is ready to talk numbers.`);
+                case 'follow':
+                    if (p && Math.random() > 0.6) {
+                        p.stage = 'negotiation';
+                        notify(`${p.address} ready!`, 'advance');
                     } else {
-                        // Need more follow up or maybe showing again
-                        if (Math.random() > 0.5) {
-                            property.stage = 'revision';
-                            showNotification(`${property.address} - Seller wants a revised offer. Numbers need adjustment.`);
-                        } else {
-                            showNotification(`${property.address} - Seller still thinking. Keep following up.`);
-                        }
+                        if (Math.random() > 0.5) p.stage = 'revision';
+                        notify(`${p.address} ${p.stage === 'revision' ? 'wants revision' : 'still thinking'}.`);
                     }
                     break;
                 case 'revise':
-                    if (property && Math.random() > 0.65) {
-                        // Revised offer accepted - move to showing
-                        property.stage = 'analyzed';
-                        showNotification(`${property.address} - Revised offer looks good! Time to schedule showing.`);
+                    if (p && Math.random() > 0.65) {
+                        p.stage = 'analyzed';
+                        notify(`${p.address} accepted!`, 'advance');
                     } else {
-                        // Still can't agree
                         if (Math.random() > 0.5) {
-                            // Deal falls through
-                            gameState.deals = gameState.deals.filter(d => d.id !== property.id);
-                            showNotification(`${property.address} - Can't agree on price. Deal fell through.`);
+                            g.deals = g.deals.filter(d => d.id !== p.id);
+                            notify(`${p.address} fell through.`);
                         } else {
-                            // Try again
-                            showNotification(`${property.address} - Seller wants to think about it. Try another revision.`);
+                            notify(`${p.address} try again.`);
                         }
                     }
                     break;
                 case 'negotiate':
-                    if (property && Math.random() > 0.4) {
-                        property.stage = 'contract';
-                        showNotification(`${property.address} - Contract signed! Now finding a buyer.`);
+                    if (p && Math.random() > 0.4) {
+                        p.stage = 'contract';
+                        notify(`${p.address} signed!`, 'advance');
                     } else {
-                        // Negotiation failed - needs revision
-                        property.stage = 'revision';
-                        showNotification(`${property.address} - Couldn't agree on terms. Need to revise offer.`);
+                        p.stage = 'revision';
+                        notify(`${p.address} revise.`);
                     }
                     break;
                 case 'buyers':
-                    if (property && Math.random() > 0.3) {
-                        closeDeal(property);
+                    if (p && Math.random() > 0.3) {
+                        closeDeal(p);
                     } else {
-                        showNotification('Contacted buyers, getting some interest.');
+                        notify('Contacted buyers.');
+                    }
+                    break;
+                case 'maxdispo':
+                    if (p) {
+                        const halfVal = Math.floor(p.value * 0.5);
+                        const dis = g.team.find(m => m.role === 'Dis');
+                        let tot = halfVal;
+                        if (dis) tot += dis.bonus;
+                        g.cash += tot;
+                        g.dealsClosedTotal++;
+                        g.deals = g.deals.filter(x => x.id !== p.id);
+                        notify(`${p.address} closed via Max! $${tot} (50% fee) 🎉`, 'advance');
+                        renderHire();
+                        renderUpg();
                     }
                     break;
                 case 'admin':
-                    showNotification('Administrative work completed.');
+                    notify('Admin done.');
                     break;
             }
 
             updateUI();
             renderDeals();
-            renderActions();
-            saveGame();
+            renderActs();
+            save();
         }
 
-        function generateLeads(count, stage) {
+        function genLeads(cnt, stage) {
             stage = stage || 'lead';
-            for (let i = 0; i < count; i++) {
-                gameState.deals.push({
+            for (let i = 0; i < cnt; i++) {
+                g.deals.push({
                     id: Date.now() + i,
-                    address: generateAddress(),
+                    address: Math.floor(Math.random() * 9999) + 100 + ' Main St',
                     value: Math.floor(Math.random() * 8000) + 3000,
                     stage: stage,
-                    week: gameState.week
+                    week: g.week
                 });
             }
         }
 
-        function generateAddress() {
-            const streets = ['Main St', 'Oak Ave', 'Maple Dr', 'Cedar Ln', 'Pine Rd', 'Elm St', 'Park Blvd', 'Washington Ave', 'Lincoln St', 'Broadway'];
-            const num = Math.floor(Math.random() * 9999) + 100;
-            return num + ' ' + streets[Math.floor(Math.random() * streets.length)];
-        }
-
-        function closeDeal(deal) {
-            const dispositions = gameState.team.find(m => m.role === 'Dispositions');
-            const bonus = dispositions ? dispositions.bonusPerDeal : 0;
-            const totalValue = deal.value + bonus;
-
-            gameState.cash += totalValue;
-            gameState.dealsClosedTotal++;
-            gameState.deals = gameState.deals.filter(d => d.id !== deal.id);
-
-            if (!gameState.firstDealClosed) {
-                gameState.firstDealClosed = true;
-                showModal('🎉 First Deal Closed!', `<p style="margin-bottom: 15px;">Congratulations! You just closed your first wholesale deal for <strong>$${totalValue}</strong>!</p><p style="color: #718096;">This is just the beginning. Keep closing deals to build capital, then start hiring team members to scale your business!</p>`);
-            } else {
-                showNotification(`${deal.address} closed! Earned $${totalValue} 🎉`, 'success');
-            }
-
+        function closeDeal(d) {
+            let tot = d.value;
+            if (g.upgrades.maxd) tot += Math.floor(d.value * 0.5);
+            const dis = g.team.find(m => m.role === 'Dis');
+            if (dis) tot += dis.bonus;
+            g.cash += tot;
+            g.dealsClosedTotal++;
+            g.deals = g.deals.filter(x => x.id !== d.id);
+            notify(`${d.address} closed! $${tot} 🎉`, 'advance');
             updateUI();
             renderDeals();
-            saveGame();
+            renderHire();
+            renderUpg();
+            save();
         }
 
         function renderDeals() {
-            const pipeline = document.getElementById('dealPipeline');
-            const stages = {
-                'lead': 'New Leads',
-                'qualified': 'Qualified',
-                'analyzed': 'Analyzed',
-                'followup': 'Follow Up Needed',
-                'revision': 'Needs Revision',
-                'negotiation': 'In Negotiation',
-                'contract': 'Under Contract'
-            };
-
-            pipeline.innerHTML = Object.entries(stages).map(([stage, title]) => {
-                const deals = gameState.deals.filter(d => d.stage === stage);
-                return `<div class="pipeline-column">
-                    <div class="pipeline-title">${title} (${deals.length})</div>
-                    ${deals.map(deal => `
-                        <div class="deal-card">
-                            <div>${deal.address}</div>
-                            <div class="deal-value">$${deal.value}</div>
-                            <div style="font-size: 11px; color: #718096; margin-top: 4px;">Week ${deal.week}</div>
-                        </div>
-                    `).join('')}
-                </div>`;
+            const p = document.getElementById('dealPipeline');
+            const stages = { lead: 'New Leads', qualified: 'Qualified', analyzed: 'Analyzed', followup: 'Follow Up', revision: 'Revision', negotiation: 'Negotiation', contract: 'Contract' };
+            p.innerHTML = Object.entries(stages).map(([s, t]) => {
+                const ds = g.deals.filter(d => d.stage === s);
+                return `<div class="pipeline-column"><div class="pipeline-title">${t} (${ds.length})</div>
+                    ${ds.map(d => `<div class="deal-card"><div>${d.address}</div><div class="deal-value">$${d.value}</div></div>`).join('')}</div>`;
             }).join('');
         }
 
         function renderTeam() {
             const grid = document.getElementById('teamGrid');
-            const soloMsg = document.getElementById('soloMessage');
-
-            if (gameState.team.length === 0) {
+            const msg = document.getElementById('soloMessage');
+            if (g.team.length === 0) {
                 grid.style.display = 'none';
-                soloMsg.style.display = 'block';
+                msg.style.display = 'block';
                 return;
             }
-
             grid.style.display = 'grid';
-            soloMsg.style.display = 'none';
-
-            grid.innerHTML = gameState.team.map(member => `
-                <div class="team-member">
-                    <div class="team-member-header">
-                        <div>
-                            <div class="team-member-name">${member.name}</div>
-                            <div class="team-member-role">${member.role}</div>
-                        </div>
-                        <button class="button button-small button-danger" data-fire="${member.id}">Fire</button>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">Cost/Week:</span>
-                        <span class="info-value">$${Math.floor(member.cost / 4)}</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">Morale:</span>
-                        <span class="info-value">${member.morale}%</span>
-                    </div>
-                    <div style="margin-top: 10px;">
-                        <div style="font-size: 12px; color: #718096; margin-bottom: 5px;">Efficiency: ${member.efficiency}%</div>
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: ${member.efficiency}%"></div>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-
-            document.querySelectorAll('[data-fire]').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    fireMember(this.dataset.fire);
-                });
-            });
+            msg.style.display = 'none';
+            grid.innerHTML = g.team.map(m => `<div class="team-member">
+                <div class="team-member-header"><div><div class="team-member-name">${m.name}</div>
+                <div class="team-member-role">${m.role}</div></div>
+                <button class="button button-small button-danger" onclick="fire('${m.id}')">Fire</button></div>
+                <div class="info-row"><span class="info-label">Monthly:</span><span class="info-value">$${m.cost}</span></div>
+                <div style="margin-top:10px;"><div style="font-size:12px;color:#718096;margin-bottom:5px;">Eff: ${m.eff}%</div>
+                <div class="progress-bar"><div class="progress-fill" style="width:${m.eff}%"></div></div></div></div>`).join('');
         }
 
-        function renderHireOptions() {
+        function renderHire() {
             const grid = document.getElementById('hireGrid');
-
-            grid.innerHTML = Object.entries(teamTemplates).map(([key, template]) => {
-                const hireCost = template.cost * 3;
-                const canAfford = gameState.cash >= hireCost;
-                const meetsRequirement = !template.requiresDeals || gameState.dealsClosedTotal >= template.requiresDeals;
-                const canHire = canAfford && meetsRequirement;
-
-                let buttonText = 'Hire Now ($' + hireCost + ')';
-                if (!canHire) {
-                    if (!meetsRequirement) {
-                        buttonText = 'Locked (Need ' + template.requiresDeals + ' deals)';
-                    } else {
-                        buttonText = 'Need $' + hireCost;
-                    }
-                }
-
-                return `<div class="hire-card">
-                    <div class="card-title">${template.name}</div>
-                    <div style="color: #718096; margin-bottom: 15px; font-size: 14px;">${template.description}</div>
-                    <div class="info-row">
-                        <span class="info-label">Monthly Cost:</span>
-                        <span class="info-value">$${template.cost}</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">Time Saved/Week:</span>
-                        <span class="info-value">${template.timeSaved}h</span>
-                    </div>
-                    ${template.requiresDeals ? `
-                        <div class="info-row">
-                            <span class="info-label">Requires:</span>
-                            <span class="info-value">${template.requiresDeals} deals closed</span>
-                        </div>
-                    ` : ''}
-                    <div style="margin-top: 15px;">
-                        <button class="button ${canHire ? 'button-success' : ''}" data-hire="${key}" ${!canHire ? 'disabled' : ''}>
-                            ${buttonText}
-                        </button>
-                    </div>
-                </div>`;
+            grid.innerHTML = Object.entries(teams).map(([k, t]) => {
+                const cost = t.reqC || (t.cost * 3);
+                const ok = g.cash >= cost && (!t.reqD || g.dealsClosedTotal >= t.reqD);
+                return `<div class="hire-card"><div class="card-title">${t.name}</div>
+                    <div style="color:#718096;margin-bottom:15px;font-size:14px;">${t.desc}</div>
+                    <div class="info-row"><span class="info-label">Monthly:</span><span class="info-value">$${t.cost}</span></div>
+                    <div class="info-row"><span class="info-label">Hire (3mo):</span><span class="info-value">$${cost}</span></div>
+                    ${t.reqD ? `<div class="info-row"><span class="info-label">Requires:</span><span class="info-value">${t.reqD} deals</span></div>` : ''}
+                    <div style="margin-top:15px;"><button class="button ${ok ? 'button-success' : ''}" onclick="hire('${k}')" ${!ok ? 'disabled' : ''}>
+                    ${ok ? 'Hire' : 'Locked'}</button></div></div>`;
             }).join('');
-
-            document.querySelectorAll('[data-hire]').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    hireMember(this.dataset.hire);
-                });
-            });
         }
 
-        function hireMember(templateKey) {
-            const template = teamTemplates[templateKey];
-            const hireCost = template.cost * 3;
+        function renderUpg() {
+            const grid = document.getElementById('upgradeGrid');
+            grid.innerHTML = Object.entries(upg).map(([k, u]) => {
+                const own = g.upgrades[k] || false;
+                const ok = g.cash >= u.cost && (!u.reqD || g.dealsClosedTotal >= u.reqD) && !own;
+                return `<div class="hire-card"><div class="card-title">${u.name} ${own ? '✓' : ''}</div>
+                    <div style="color:#718096;margin-bottom:15px;font-size:14px;">${u.ben}</div>
+                    <div class="info-row"><span class="info-label">Cost:</span><span class="info-value">${u.cost === 0 ? 'FREE' : '$' + u.cost}${u.monthly ? '/mo' : ''}</span></div>
+                    ${u.reqD ? `<div class="info-row"><span class="info-label">Requires:</span><span class="info-value">${u.reqD} deals</span></div>` : ''}
+                    <div style="margin-top:15px;"><button class="button ${ok ? 'button-success' : ''}" onclick="buyUpg('${k}')" ${!ok ? 'disabled' : ''}>
+                    ${own ? 'Owned' : (ok ? 'Buy' : 'Locked')}</button></div></div>`;
+            }).join('');
+        }
 
-            if (gameState.cash < hireCost) {
-                showNotification('Not enough cash to hire!', 'error');
-                return;
-            }
+        function buyUpg(k) {
+            const u = upg[k];
+            if (g.upgrades[k] || g.cash < u.cost) return;
+            g.cash -= u.cost;
+            g.upgrades[k] = true;
+            if (k === 'enzo') g.timeLeft += 30;
+            notify(`${u.name} bought!`, 'advance');
+            updateUI();
+            renderUpg();
+            renderActs();
+            save();
+        }
 
-            if (template.requiresDeals && gameState.dealsClosedTotal < template.requiresDeals) {
-                showNotification('Need ' + template.requiresDeals + ' deals closed first!', 'error');
-                return;
-            }
-
-            gameState.cash -= hireCost;
-
-            const newMember = {
-                id: Date.now().toString(),
-                name: template.name,
-                role: template.role,
-                cost: template.cost,
-                timeSaved: template.timeSaved,
-                description: template.description,
-                efficiency: template.efficiency,
-                morale: template.morale,
-                leadsPerWeek: template.leadsPerWeek,
-                dealsPerMonth: template.dealsPerMonth,
-                bonusPerDeal: template.bonusPerDeal,
-                hiredWeek: gameState.week
-            };
-
-            gameState.team.push(newMember);
-
-            showNotification(newMember.name + ' hired! Paid $' + hireCost + ' (3 months).', 'success');
+        function hire(k) {
+            const t = teams[k];
+            const cost = t.reqC || (t.cost * 3);
+            if (g.cash < cost) { notify('Not enough cash!'); return; }
+            g.cash -= cost;
+            g.team.push({ id: Date.now().toString(), name: t.name, role: t.role, cost: t.cost, time: t.time, desc: t.desc, eff: t.eff, mor: t.mor, leads: t.leads, deals: t.deals, bonus: t.bonus, week: g.week });
+            notify(`${t.name} hired!`, 'advance');
             updateUI();
             renderTeam();
-            renderHireOptions();
-            saveGame();
+            renderHire();
+            save();
         }
 
-        function fireMember(memberId) {
-            if (!confirm('Are you sure you want to fire this team member?')) return;
-
-            gameState.team = gameState.team.filter(m => m.id !== memberId);
-            showNotification('Team member fired.', 'error');
-
-            gameState.team.forEach(m => m.morale = Math.max(50, m.morale - 10));
-
+        function fire(id) {
+            if (!confirm('Fire this team member?')) return;
+            g.team = g.team.filter(m => m.id !== id);
+            notify('Fired.');
             updateUI();
             renderTeam();
-            saveGame();
+            save();
         }
 
-        function advanceWeek() {
-            // Monthly costs every 4 weeks
-            if (gameState.week % 4 === 0) {
-                const monthlyCosts = gameState.team.reduce((sum, member) => sum + member.cost, 0);
-
-                if (gameState.cash < monthlyCosts) {
-                    showModal('💸 Cash Flow Crisis!', `
-                        <p style="color: #f56565; margin-bottom: 15px;">You don't have enough cash to pay this month's expenses!</p>
-                        <div class="info-row">
-                            <span class="info-label">Team Salaries:</span>
-                            <span class="info-value">$${monthlyCosts}</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label">Your Cash:</span>
-                            <span class="info-value">$${gameState.cash}</span>
-                        </div>
-                        <p style="margin-top: 15px; color: #718096;">You'll need to fire team members or close deals to continue.</p>
-                    `);
+        function advWeek() {
+            if (g.week % 4 === 0) {
+                let costs = g.team.reduce((sum, m) => sum + m.cost, 0);
+                if (g.upgrades.enzo) costs += 225;
+                if (g.cash < costs) {
+                    showMod('💸 Cash Crisis!', `<p style="color:#f56565;margin-bottom:15px;">Can't pay expenses!</p>
+                        <div class="info-row"><span class="info-label">Expenses:</span><span class="info-value">$${costs}</span></div>
+                        <div class="info-row"><span class="info-label">Cash:</span><span class="info-value">$${g.cash}</span></div>`);
                     return;
                 }
-
-                gameState.cash -= monthlyCosts;
-                showNotification('Monthly expenses paid: $' + monthlyCosts, 'error');
+                g.cash -= costs;
+                notify('Monthly paid: $' + costs);
             }
 
-            // Team efficiency improves over time
-            gameState.team.forEach(member => {
-                if (member.efficiency < 100) {
-                    member.efficiency = Math.min(100, member.efficiency + 10);
-                }
-            });
-
-            // VA generates leads automatically
-            gameState.team.forEach(member => {
-                if (member.role === 'VA' && member.leadsPerWeek) {
-                    const leads = Math.floor(member.leadsPerWeek * (member.efficiency / 100));
-                    if (leads > 0) {
-                        generateLeads(leads);
-                        showNotification(`${member.name} generated ${leads} leads!`);
+            g.team.forEach(m => { if (m.eff < 100) m.eff = Math.min(100, m.eff + 10); });
+            g.team.forEach(m => {
+                if (m.role === 'VA' && m.leads) {
+                    const l = Math.floor(m.leads * (m.eff / 100));
+                    if (l > 0) {
+                        genLeads(l);
+                        notify(`${m.name}: ${l} leads!`, 'advance');
                     }
                 }
             });
 
-            // Advance week
-            gameState.week++;
-            gameState.timeLeft = 40;
-
-            // Add time from team members
-            gameState.team.forEach(member => {
-                gameState.timeLeft += Math.floor(member.timeSaved * (member.efficiency / 100));
-            });
+            g.week++;
+            g.timeLeft = 40;
+            g.team.forEach(m => { g.timeLeft += Math.floor(m.time * (m.eff / 100)); });
+            if (g.upgrades.enzo) g.timeLeft += 30;
 
             updateUI();
             renderDeals();
-            renderActions();
-            saveGame();
-
-            showNotification('Week ' + gameState.week + ' begins! You have ' + gameState.timeLeft + ' hours.');
+            renderActs();
+            save();
+            notify(`Week ${g.week}: ${g.timeLeft}h available.`, 'advance');
         }
 
         function updateUI() {
-            document.getElementById('cash').textContent = gameState.cash.toLocaleString();
-            document.getElementById('week').textContent = gameState.week;
-            document.getElementById('dealsCount').textContent = gameState.dealsClosedTotal;
-            document.getElementById('timeLeft').textContent = gameState.timeLeft;
-
-            const avgMorale = gameState.team.length > 0
-                ? Math.floor(gameState.team.reduce((sum, m) => sum + m.morale, 0) / gameState.team.length)
-                : 100;
-            document.getElementById('morale').textContent = avgMorale;
+            document.getElementById('cash').textContent = g.cash.toLocaleString();
+            document.getElementById('week').textContent = g.week;
+            document.getElementById('dealsCount').textContent = g.dealsClosedTotal;
+            document.getElementById('timeLeft').textContent = g.timeLeft;
         }
 
-        function showNotification(message, type) {
-            type = type || 'success';
-            const notif = document.createElement('div');
-            notif.className = 'notification';
-            notif.style.borderLeftColor = type === 'error' ? '#f56565' : '#48bb78';
-            notif.textContent = message;
-            document.body.appendChild(notif);
-
-            setTimeout(() => notif.remove(), 3000);
+        function notify(msg, type) {
+            type = type || 'neutral';
+            const n = document.createElement('div');
+            n.className = 'notification';
+            if (type === 'advance') {
+                n.style.borderLeftColor = '#48bb78';
+                n.style.background = '#f0fdf4';
+            } else {
+                n.style.borderLeftColor = '#f56565';
+                n.style.background = '#fef2f2';
+            }
+            n.textContent = msg;
+            document.body.appendChild(n);
+            setTimeout(() => n.remove(), 3000);
         }
 
-        function showModal(title, body) {
+        function showMod(title, body) {
             document.getElementById('modalTitle').textContent = title;
             document.getElementById('modalBody').innerHTML = body;
             document.getElementById('modal').classList.add('active');
         }
 
-        function closeModal() {
+        function closeMod() {
             document.getElementById('modal').classList.remove('active');
         }
 
-        function saveGame() {
-            localStorage.setItem('teamBuildingTycoon', JSON.stringify(gameState));
+        function save() {
+            localStorage.setItem('teamBuildingTycoon', JSON.stringify(g));
         }
 
-        function loadGame() {
-            const saved = localStorage.getItem('teamBuildingTycoon');
-            if (saved) {
-                const loaded = JSON.parse(saved);
-                Object.assign(gameState, loaded);
-            }
+        function load() {
+            const s = localStorage.getItem('teamBuildingTycoon');
+            if (s) Object.assign(g, JSON.parse(s));
         }
 
-        function resetGame() {
-            if (!confirm('Are you sure you want to reset all progress?')) return;
-
+        function reset() {
+            if (!confirm('Reset?')) return;
             localStorage.removeItem('teamBuildingTycoon');
-            localStorage.removeItem('tutorialShown');
             location.reload();
         }
 
