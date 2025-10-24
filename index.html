@@ -1479,9 +1479,7 @@
                     }
                 });
                 if (g.cash < costs) {
-                    showMod('<i class="fa-solid fa-hand-holding-dollar"></i> Cash Crisis!', `<p style="color:#f56565;margin-bottom:15px;">Can't pay expenses!</p>
-                        <div class="info-row"><span class="info-label">Expenses:</span><span class="info-value">$${costs}</span></div>
-                        <div class="info-row"><span class="info-label">Cash:</span><span class="info-value">$${g.cash}</span></div>`);
+                    showBankruptcy(costs);
                     return;
                 }
                 g.cash -= costs;
@@ -1565,6 +1563,56 @@
             }, 800);
         }
 
+        function showBankruptcy(expenses) {
+            const avgProfit = g.closedDeals.length > 0 ? Math.floor(g.totalProfit / g.closedDeals.length) : 0;
+
+            document.getElementById('modalTitle').innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> BANKRUPT!';
+            document.getElementById('modalBody').innerHTML = `
+                <div style="text-align: center;">
+                    <div style="font-size: 48px; margin-bottom: 20px; color: #f56565;">
+                        <i class="fa-solid fa-money-bill-crack"></i>
+                    </div>
+                    <div style="font-size: 20px; font-weight: bold; margin-bottom: 15px; color: #f56565;">
+                        Your wholesaling journey ends here.
+                    </div>
+                    <div style="font-size: 14px; color: var(--text-faded); margin-bottom: 25px;">
+                        Unable to pay monthly expenses of $${expenses.toLocaleString()}
+                    </div>
+
+                    <div style="background: #252525; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                        <div style="font-size: 16px; font-weight: 600; margin-bottom: 15px; color: var(--text-light);">
+                            Final Stats
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Weeks Survived:</span>
+                            <span class="info-value">${g.week}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Deals Closed:</span>
+                            <span class="info-value">${g.dealsClosedTotal}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Total Profit Earned:</span>
+                            <span class="info-value" style="color: #48bb78;">$${g.totalProfit.toLocaleString()}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Average Profit/Deal:</span>
+                            <span class="info-value">$${avgProfit.toLocaleString()}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Team Members:</span>
+                            <span class="info-value">${g.team.length}</span>
+                        </div>
+                    </div>
+
+                    <button class="button button-success" onclick="startNewGame()" style="width: 100%; font-size: 16px; padding: 15px;">
+                        <i class="fa-solid fa-rotate-right"></i> New Game
+                    </button>
+                </div>
+            `;
+            document.getElementById('modal').classList.add('active');
+        }
+
         function showMod(title, body) {
             document.getElementById('modalTitle').innerHTML = title;
             document.getElementById('modalBody').innerHTML = body;
@@ -1587,6 +1635,11 @@
 
         function reset() {
             if (!confirm('Reset?')) return;
+            localStorage.removeItem('teamBuildingTycoon');
+            location.reload();
+        }
+
+        function startNewGame() {
             localStorage.removeItem('teamBuildingTycoon');
             location.reload();
         }
