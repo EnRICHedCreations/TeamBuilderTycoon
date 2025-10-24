@@ -178,7 +178,8 @@
 
         const mkOpts = [
             { id: 'gov', name: 'Pull Government List', cost: 0, leads: 0.25, desc: 'Free public records (low yield)', time: 0.5 },
-            { id: 'ppl', name: 'Pay Per Lead', cost: 200, leads: 1, desc: '$200/lead', req: 200 },
+            { id: 'govPremium', name: 'Premium Government List', cost: 75, leads: [1, 3], desc: 'Better data sources ($75)', time: 0.5 },
+            { id: 'ppl', name: 'Pay Per Lead', cost: 200, leads: 1, desc: 'Pre-qualified lead ready to analyze ($200)', req: 200 },
             { id: 'ppc', name: 'Pay Per Click', cost: 2000, leads: [20, 35], desc: 'Weekly PPC ($2000)', req: 2000, time: 2 }
         ];
 
@@ -191,19 +192,19 @@
         ];
 
         const upg = {
-            skipTrace: { name: 'Skip Trace Tool', cost: 1000, ben: 'Pull Government List gives 2-5 leads instead of 0-1', type: 'marketing', reqD: 3 },
+            skipTrace: { name: 'Skip Trace Tool', cost: 1000, ben: 'Government lists give 2-5 leads instead of base amount', type: 'marketing', reqD: 3 },
             batchDialer: { name: 'Batch Dialer', cost: 2500, ben: 'Unlock batch calling (5 leads at once)', type: 'call', reqD: 5 },
             rvm: { name: 'RVM (Ringless Voicemail)', cost: 1500, ben: 'Send 100 RVMs for $50 (1-3% success rate)', type: 'call', reqD: 4 },
-            xleads: { name: 'XLeads Software', cost: 5000, ben: 'Pull Government List gives 10-20 leads in 1 hour', type: 'marketing', reqD: 12 },
+            xleads: { name: 'XLeads Software', cost: 5000, ben: 'Government lists give 10-20 leads', type: 'marketing', reqD: 12 },
             textDrip: { name: 'Text Drip Campaign', cost: 3000, ben: 'Unlock text blast (1000 texts, 3-8% success)', type: 'text', reqD: 15 },
             enzo: { name: 'Enzo Power Dialer', cost: 8000, ben: '+30h/week + unlock power dialing', type: 'call', monthly: 225, reqD: 20 },
             maxd: { name: 'MaxDispo.com Partnership', cost: 0, ben: '+50% deal value on all closes', type: 'dispo', reqD: 75 }
         };
 
         const teams = {
-            va: { name: 'Virtual Assistant', role: 'VA', cost: 800, time: 20, desc: 'Cold calling & data', eff: 50, mor: 100, leads: 12, reqC: 2400, reqD: 2 },
-            acq: { name: 'Acquisitions Manager', role: 'Acq', cost: 2500, time: 15, desc: 'Sources deals', eff: 50, mor: 100, deals: 3, reqC: 7500, reqD: 4 },
-            dis: { name: 'Dispositions', role: 'Dis', cost: 2000, time: 10, desc: 'Buyer list', eff: 50, mor: 100, bonus: 2000, reqC: 6000, reqD: 5 }
+            va: { name: 'Virtual Assistant', role: 'VA', cost: 800, time: 20, desc: '+20h/week, generates 12 leads weekly (starts 50% efficient)', eff: 50, mor: 100, leads: 12, reqC: 2400, reqD: 2 },
+            acq: { name: 'Acquisitions Manager', role: 'Acq', cost: 2500, time: 15, desc: '+15h/week for deal processing capacity', eff: 50, mor: 100, deals: 3, reqC: 7500, reqD: 4 },
+            dis: { name: 'Dispositions', role: 'Dis', cost: 2000, time: 10, desc: '+10h/week, adds $2,000 bonus to every closed deal', eff: 50, mor: 100, bonus: 2000, reqC: 6000, reqD: 5 }
         };
 
         const acts = [
@@ -425,17 +426,23 @@
             }
 
             // Apply upgrade modifiers
-            if (id === 'gov' && g.upgrades.skipTrace) {
-                leadCnt = Math.floor(Math.random() * 4) + 2; // 2-5 leads
-            } else if (id === 'gov' && g.upgrades.xleads) {
+            if ((id === 'gov' || id === 'govPremium') && g.upgrades.xleads) {
                 leadCnt = Math.floor(Math.random() * 11) + 10; // 10-20 leads
+            } else if ((id === 'gov' || id === 'govPremium') && g.upgrades.skipTrace) {
+                leadCnt = Math.floor(Math.random() * 4) + 2; // 2-5 leads
             }
 
             if (leadCnt === 0) {
                 notify(`${o.name}: No leads.`);
             } else {
-                genLeads(leadCnt);
-                notify(`${o.name}: ${leadCnt} lead${leadCnt > 1 ? 's' : ''}!`, 'advance');
+                // Pay Per Lead generates pre-qualified leads (analyzed stage)
+                const stage = id === 'ppl' ? 'analyzed' : 'lead';
+                genLeads(leadCnt, stage);
+                if (id === 'ppl') {
+                    notify(`${o.name}: ${leadCnt} pre-qualified lead${leadCnt > 1 ? 's' : ''} ready to analyze!`, 'advance');
+                } else {
+                    notify(`${o.name}: ${leadCnt} lead${leadCnt > 1 ? 's' : ''}!`, 'advance');
+                }
             }
 
             updateUI();
