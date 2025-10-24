@@ -591,12 +591,12 @@
                     }
                     break;
                 case 'revise':
-                    // Reduce profit by 20-30% and go back to analyzed
+                    // Reduce profit by 20-30% and advance to contract
                     if (p) {
                         const reduction = Math.floor(p.value * (0.20 + Math.random() * 0.10));
                         const oldVal = p.value;
                         p.value = Math.max(1000, p.value - reduction);
-                        p.stage = 'analyzed';
+                        p.stage = 'contract';
                         notify(`${p.address} accepted! (Profit reduced: $${oldVal} → $${p.value})`, 'advance');
                     }
                     break;
