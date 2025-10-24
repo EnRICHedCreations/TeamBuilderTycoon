@@ -708,7 +708,8 @@
                 trust: persona.trust,
                 mctp: { M: false, C: false, T: false, P: false },
                 turn: 0,
-                dialogue: []
+                dialogue: [],
+                askedCategories: [] // Track which categories have been asked
             };
 
             // Clear previous dialogue history
@@ -723,12 +724,39 @@
             };
             document.getElementById('sellerModalTitle').innerHTML = titles[action.id] || '<i class="fa-solid fa-phone"></i> Calling Seller...';
 
-            updateMCTPDisplay();
+            // Show/hide MCTP display based on action
+            const mctpDiv = document.getElementById('sellerMCTP');
+            if (action.id === 'show') {
+                mctpDiv.style.display = 'block';
+                updateMCTPDisplay();
+            } else {
+                // For negotiate and revise, only show trust
+                mctpDiv.style.display = 'block';
+                document.getElementById('mctpStatus').innerHTML = `
+                    <div style="text-align: center; font-size: 14px; font-weight: 600; color: var(--text-light);">
+                        Trust Level: <span style="color: ${currentSeller.trust >= 3 ? '#48bb78' : '#f56565'};">${currentSeller.trust}</span>
+                    </div>
+                `;
+            }
+
             showNextDialogueChoice();
             document.getElementById('sellerModal').classList.add('active');
         }
 
         function updateMCTPDisplay() {
+            // For negotiate and revise, only show trust
+            if (currentSeller.action === 'negotiate' || currentSeller.action === 'revise') {
+                const status = `
+                    <div style="text-align: center; font-size: 14px; font-weight: 600; color: var(--text-light);">
+                        Trust Level: <span style="color: ${currentSeller.trust >= 3 ? '#48bb78' : '#f56565'};">${currentSeller.trust}</span>
+                        <div style="font-size: 11px; color: var(--text-faded); margin-top: 5px;">Need Trust ≥3 to succeed</div>
+                    </div>
+                `;
+                document.getElementById('mctpStatus').innerHTML = status;
+                return;
+            }
+
+            // For 'show' action, display full MCTP
             const mctp = currentSeller.mctp;
             const mctpCount = Object.values(mctp).filter(v => v).length;
             const status = `
@@ -775,11 +803,24 @@
                 if (currentSeller.turn === 1) {
                     availableCategories = ['opening'];
                 } else {
-                    availableCategories = ['motivation', 'condition', 'timeline', 'price'];
+                    // Filter out already asked MCTP categories
+                    availableCategories = ['motivation', 'condition', 'timeline', 'price']
+                        .filter(cat => !currentSeller.askedCategories.includes(cat));
+
+                    // If all categories have been asked, allow repeats
+                    if (availableCategories.length === 0) {
+                        availableCategories = ['motivation', 'condition', 'timeline', 'price'];
+                    }
                 }
             }
 
             const category = availableCategories[Math.floor(Math.random() * availableCategories.length)];
+
+            // Track this category as asked (only for MCTP categories)
+            if (currentSeller.action === 'show' && category !== 'opening') {
+                currentSeller.askedCategories.push(category);
+            }
+
             const choices = scenarios[category];
 
             // Safety check
@@ -959,9 +1000,16 @@
                 return;
             }
 
-            // Calculate success based on MCTP gathered
-            const mctpCount = Object.values(currentSeller.mctp).filter(v => v).length;
-            const success = mctpCount >= 3 && currentSeller.trust >= 3;
+            // Calculate success based on action type
+            let success;
+            if (currentSeller.action === 'show') {
+                // Show action requires MCTP + trust
+                const mctpCount = Object.values(currentSeller.mctp).filter(v => v).length;
+                success = mctpCount >= 3 && currentSeller.trust >= 3;
+            } else {
+                // Negotiate and revise only require trust
+                success = currentSeller.trust >= 3;
+            }
 
             if (success) {
                 // Original success logic from execAct
@@ -1007,7 +1055,15 @@
                     }
                 }
             } else {
-                notify(`Call incomplete. Need more MCTP info (${mctpCount}/4) and trust (${currentSeller.trust}/3).`);
+                // Different failure messages based on action type
+                if (currentSeller.action === 'show') {
+                    const mctpCount = Object.values(currentSeller.mctp).filter(v => v).length;
+                    notify(`Call incomplete. Need more MCTP info (${mctpCount}/4) and trust (${currentSeller.trust}/3).`);
+                } else if (currentSeller.action === 'negotiate') {
+                    notify(`Negotiation failed. Insufficient trust (${currentSeller.trust}/3 required).`);
+                } else if (currentSeller.action === 'revise') {
+                    notify(`Seller rejected revision. Trust too low (${currentSeller.trust}/3 required).`);
+                }
             }
 
             currentSeller = null;
