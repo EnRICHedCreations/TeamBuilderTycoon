@@ -311,46 +311,70 @@
                 opening: [
                     { text: "Hi, I appreciate you taking my call. I understand you're looking to sell your property?", impact: { trust: 1 } },
                     { text: "Hello! I'm a real estate investor and I want to buy your house. What's your bottom line?", impact: { trust: -2 } },
-                    { text: "Hey, I saw your property listing. Tell me what's wrong with it and why you need to sell fast.", impact: { trust: -1 } }
+                    { text: "Hey, I saw your property listing. Tell me what's wrong with it and why you need to sell fast.", impact: { trust: -1 } },
+                    { text: "Good morning! Thank you for your time. I work with homeowners in situations like yours.", impact: { trust: 2 } },
+                    { text: "Yo, what's up? I buy houses. You trying to sell or what?", impact: { trust: -3 } },
+                    { text: "Hello, my name is on the card I left. Did you get a chance to look at it?", impact: { trust: 0 } }
                 ],
                 motivation: [
                     { text: "What's prompting you to sell at this time?", impact: { trust: 1, reveals: 'M' } },
                     { text: "Are you just testing the market or do you actually need to sell?", impact: { trust: -1 } },
-                    { text: "I understand transitions can be challenging. What's your situation?", impact: { trust: 2, reveals: 'M' } }
+                    { text: "I understand transitions can be challenging. What's your situation?", impact: { trust: 2, reveals: 'M' } },
+                    { text: "Help me understand what brought you to this decision.", impact: { trust: 1, reveals: 'M' } },
+                    { text: "Why are you wasting my time if you're not serious about selling?", impact: { trust: -3 } },
+                    { text: "Every property has a story. What's yours?", impact: { trust: 2, reveals: 'M' } }
                 ],
                 condition: [
                     { text: "Can you tell me about the condition of the property? Any major repairs needed?", impact: { trust: 1, reveals: 'C' } },
                     { text: "I'll need to inspect it myself, but what issues should I know about?", impact: { trust: 0, reveals: 'C' } },
-                    { text: "How much money have you had to sink into repairs lately?", impact: { trust: -1 } }
+                    { text: "How much money have you had to sink into repairs lately?", impact: { trust: -1 } },
+                    { text: "Walk me through the property - what's working well and what might need attention?", impact: { trust: 1, reveals: 'C' } },
+                    { text: "Look, I've seen it all. Just tell me what's broken so I can lowball you properly.", impact: { trust: -3 } },
+                    { text: "When was the last time any major systems were updated?", impact: { trust: 0, reveals: 'C' } }
                 ],
                 timeline: [
                     { text: "What's your ideal timeline for closing?", impact: { trust: 1, reveals: 'T' } },
                     { text: "How quickly do you need this done?", impact: { trust: 0, reveals: 'T' } },
-                    { text: "I can close fast if the price is right. When do you need out?", impact: { trust: -1, reveals: 'T' } }
+                    { text: "I can close fast if the price is right. When do you need out?", impact: { trust: -1, reveals: 'T' } },
+                    { text: "Help me understand your timeframe so I can structure the best offer.", impact: { trust: 2, reveals: 'T' } },
+                    { text: "I close in 7 days cash. That should work for you, right?", impact: { trust: -1 } },
+                    { text: "Is there any flexibility in when you'd like to close?", impact: { trust: 1, reveals: 'T' } }
                 ],
                 price: [
                     { text: "What price range were you hoping for?", impact: { trust: 0, reveals: 'P' } },
                     { text: "Based on condition and comps, I'm thinking around a certain amount. Does that work for you?", impact: { trust: 1, reveals: 'P' } },
-                    { text: "I need to make a profit here. What's your absolute lowest number?", impact: { trust: -2 } }
+                    { text: "I need to make a profit here. What's your absolute lowest number?", impact: { trust: -2 } },
+                    { text: "Have you had the property appraised or do you have a number in mind?", impact: { trust: 1, reveals: 'P' } },
+                    { text: "Listen, I'll be straight - what's your rock bottom number so we don't waste time?", impact: { trust: -3 } },
+                    { text: "I want to make you a fair offer. What would you consider fair?", impact: { trust: 2, reveals: 'P' } }
                 ]
             },
             negotiate: {
                 pushback: [
                     { text: "I understand your concerns. Let me see if we can find a middle ground that works for both of us.", impact: { trust: 2 } },
                     { text: "That's my offer. Take it or leave it.", impact: { trust: -3 } },
-                    { text: "I hear you. What if we adjust the closing timeline to give you more flexibility?", impact: { trust: 1 } }
+                    { text: "I hear you. What if we adjust the closing timeline to give you more flexibility?", impact: { trust: 1 } },
+                    { text: "Let's take a step back and look at what's important to you in this deal.", impact: { trust: 2 } },
+                    { text: "You're pushing back on everything. Do you even want to sell?", impact: { trust: -3 } },
+                    { text: "I appreciate your perspective. What if we structured it differently?", impact: { trust: 1 } }
                 ],
                 objection: [
                     { text: "I completely understand. What would make this work better for you?", impact: { trust: 2 } },
                     { text: "Look, this is a fair offer based on the market. You won't get better.", impact: { trust: -2 } },
-                    { text: "Let me explain how I arrived at this number...", impact: { trust: 1 } }
+                    { text: "Let me explain how I arrived at this number...", impact: { trust: 1 } },
+                    { text: "You're right to have concerns. Let's address each one.", impact: { trust: 2 } },
+                    { text: "Every seller says that. The market doesn't care about your feelings.", impact: { trust: -3 } },
+                    { text: "What specific part of the offer concerns you most?", impact: { trust: 1 } }
                 ]
             },
             revise: {
                 adjustment: [
                     { text: "I've thought about your feedback. Here's an improved offer that addresses your concerns.", impact: { trust: 2 } },
                     { text: "Fine, I'll go a bit higher, but this is my final offer.", impact: { trust: 0 } },
-                    { text: "After running the numbers again, I can increase my offer slightly.", impact: { trust: 1 } }
+                    { text: "After running the numbers again, I can increase my offer slightly.", impact: { trust: 1 } },
+                    { text: "I spoke with my partner and we can make some adjustments to work with you.", impact: { trust: 2 } },
+                    { text: "Take it or leave it. I've already given you more than I should have.", impact: { trust: -2 } },
+                    { text: "Based on our conversation, here's a revised offer that's fair for both of us.", impact: { trust: 1 } }
                 ]
             }
         };
@@ -765,10 +789,17 @@
                 return;
             }
 
+            // Randomly pick 3 choices from the pool, then shuffle them
+            const selectedChoices = choices
+                .map((choice, idx) => ({ choice, originalIndex: idx }))
+                .sort(() => Math.random() - 0.5)
+                .slice(0, 3)
+                .sort(() => Math.random() - 0.5);
+
             let choicesHTML = '<div style="margin-bottom: 10px; font-weight: 600; color: var(--text-light);">Choose your response:</div>';
-            choices.forEach((choice, idx) => {
-                choicesHTML += `<div class="property-option" onclick="selectDialogueChoice(${idx}, '${category}')" style="cursor: pointer; margin-bottom: 10px;">
-                    <div style="line-height: 1.6;">${choice.text}</div>
+            selectedChoices.forEach((item) => {
+                choicesHTML += `<div class="property-option" onclick="selectDialogueChoice(${item.originalIndex}, '${category}')" style="cursor: pointer; margin-bottom: 10px;">
+                    <div style="line-height: 1.6;">${item.choice.text}</div>
                 </div>`;
             });
 
