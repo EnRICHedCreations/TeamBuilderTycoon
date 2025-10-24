@@ -93,11 +93,12 @@
                 <button class="nav-button" data-section="team">👥 Team</button>
                 <button class="nav-button" data-section="hire">➕ Hire</button>
                 <button class="nav-button" data-section="upgrades">⬆️ Upgrades</button>
+                <button class="nav-button" data-section="stats">📊 Stats</button>
                 <button class="nav-button" data-section="settings">⚙️ Settings</button>
             </div>
             <div class="main-content">
                 <div id="content-actions" class="content-section">
-                    <div class="section-title">Weekly Actions</div>
+                    <div class="section-title" id="actionsSectionTitle">Weekly Actions</div>
                     <div class="action-grid" id="actionGrid"></div>
                     <div style="margin-top: 30px;">
                         <button class="button button-success" id="advanceWeekBtn" style="font-size: 16px; padding: 15px 30px;">⏭️ Advance to Next Week</button>
@@ -123,6 +124,10 @@
                 <div id="content-upgrades" class="content-section" style="display:none;">
                     <div class="section-title">Upgrades & Tools</div>
                     <div class="hire-grid" id="upgradeGrid"></div>
+                </div>
+                <div id="content-stats" class="content-section" style="display:none;">
+                    <div class="section-title">Your Stats & Achievements</div>
+                    <div id="statsContent"></div>
                 </div>
                 <div id="content-settings" class="content-section" style="display:none;">
                     <div class="section-title">Game Settings</div>
@@ -155,46 +160,153 @@
         </div>
     </div>
     <script>
-        const g = { cash: 0, week: 1, timeLeft: 40, dealsClosedTotal: 0, team: [], deals: [], upgrades: {} };
+        const g = { cash: 500, week: 1, timeLeft: 40, dealsClosedTotal: 0, totalProfit: 0, team: [], deals: [], closedDeals: [], upgrades: {}, adminBlocked: false, offlineTime: 0, lastPlayTime: Date.now(), prestigeLevel: 0, dailyLoginStreak: 0, lastLoginDate: null };
         let sel = null, pend = null;
+        let notifQueue = [], notifActive = false;
+        let autoAdvancing = false;
 
         const mkOpts = [
-            { id: 'gov', name: 'Pull Government List', cost: 0, leads: [3, 8], desc: 'Free public records', time: 3 },
-            { id: 'ppl', name: 'Pay Per Lead', cost: 250, leads: 1, desc: '$250/lead', req: 250 },
-            { id: 'ppc', name: 'Pay Per Click', cost: 2500, leads: [15, 30], desc: 'Weekly PPC ($2500)', req: 2500, time: 2 }
+            { id: 'gov', name: 'Pull Government List', cost: 0, leads: 0.25, desc: 'Free public records (low yield)', time: 0.5 },
+            { id: 'ppl', name: 'Pay Per Lead', cost: 200, leads: 1, desc: '$200/lead', req: 200 },
+            { id: 'ppc', name: 'Pay Per Click', cost: 2000, leads: [20, 35], desc: 'Weekly PPC ($2000)', req: 2000, time: 2 }
         ];
 
         const contact = [
-            { id: 'call', name: 'Cold Call Leads', time: 2, cost: 0, desc: 'Call 10 leads', cnt: 10, rate: [0.2, 0.5] },
-            { id: 'text', name: 'Text Blasting', time: 0.5, cost: 10, desc: '1000 texts ($10)', cnt: 1000, rate: [0.003, 0.012], req: 10 },
-            { id: 'drip', name: 'Text Blast Drip', time: 1, cost: 100, desc: 'Drip campaign ($100)', cnt: 1000, rate: [0.04, 0.07], req: 100, reqUpg: 'drip' }
+            { id: 'call', name: 'Cold Call Single Lead', time: 0.5, cost: 0, desc: 'Call 1 lead', cnt: 1, rate: [0.10, 0.15] },
+            { id: 'text', name: 'Text Single Lead', time: 0.1, cost: 2, desc: 'Text 1 lead ($2)', cnt: 1, rate: [0.05, 0.08] },
+            { id: 'batchCall', name: 'Batch Call (5 leads)', time: 2, cost: 0, desc: 'Call 5 leads at once', cnt: 5, rate: [0.10, 0.15], reqUpg: 'batchDialer' },
+            { id: 'rvm', name: 'Send RVMs', time: 0.5, cost: 50, desc: '100 RVMs ($50)', cnt: 100, rate: [0.01, 0.03], reqUpg: 'rvm' },
+            { id: 'textBlast', name: 'Text Blast Campaign', time: 1, cost: 200, desc: '1000 texts ($200)', cnt: 1000, rate: [0.03, 0.08], reqUpg: 'textDrip' }
         ];
 
         const upg = {
-            drip: { name: 'Drip SMS', cost: 500, ben: 'Unlock drip campaign + 2x basic text rate', type: 'text' },
-            enzo: { name: 'Enzo Dialer', cost: 225, ben: '+30h/week', type: 'call', monthly: true },
-            maxd: { name: 'MaxDispo.com', cost: 0, ben: '+50% deal value', type: 'dispo', reqD: 5 }
+            skipTrace: { name: 'Skip Trace Tool', cost: 1000, ben: 'Pull Government List gives 2-5 leads instead of 0-1', type: 'marketing', reqD: 3 },
+            batchDialer: { name: 'Batch Dialer', cost: 2500, ben: 'Unlock batch calling (5 leads at once)', type: 'call', reqD: 5 },
+            rvm: { name: 'RVM (Ringless Voicemail)', cost: 1500, ben: 'Send 100 RVMs for $50 (1-3% success rate)', type: 'call', reqD: 4 },
+            xleads: { name: 'XLeads Software', cost: 5000, ben: 'Pull Government List gives 10-20 leads in 1 hour', type: 'marketing', reqD: 12 },
+            textDrip: { name: 'Text Drip Campaign', cost: 3000, ben: 'Unlock text blast (1000 texts, 3-8% success)', type: 'text', reqD: 15 },
+            enzo: { name: 'Enzo Power Dialer', cost: 8000, ben: '+30h/week + unlock power dialing', type: 'call', monthly: 225, reqD: 20 },
+            maxd: { name: 'MaxDispo.com Partnership', cost: 0, ben: '+50% deal value on all closes', type: 'dispo', reqD: 75 }
         };
 
         const teams = {
-            va: { name: 'Virtual Assistant', role: 'VA', cost: 800, time: 20, desc: 'Cold calling & data', eff: 50, mor: 100, leads: 15, reqC: 2400, reqD: 3 },
-            acq: { name: 'Acquisitions Manager', role: 'Acq', cost: 2500, time: 15, desc: 'Sources deals', eff: 50, mor: 100, deals: 3, reqC: 7500, reqD: 5 },
-            dis: { name: 'Dispositions', role: 'Dis', cost: 2000, time: 10, desc: 'Buyer list', eff: 50, mor: 100, bonus: 1500, reqC: 6000, reqD: 7 }
+            va: { name: 'Virtual Assistant', role: 'VA', cost: 800, time: 20, desc: 'Cold calling & data', eff: 50, mor: 100, leads: 12, reqC: 2400, reqD: 2 },
+            acq: { name: 'Acquisitions Manager', role: 'Acq', cost: 2500, time: 15, desc: 'Sources deals', eff: 50, mor: 100, deals: 3, reqC: 7500, reqD: 4 },
+            dis: { name: 'Dispositions', role: 'Dis', cost: 2000, time: 10, desc: 'Buyer list', eff: 50, mor: 100, bonus: 2000, reqC: 6000, reqD: 5 }
         };
 
         const acts = [
             { id: 'analyze', name: 'Analyze Property', time: 1.5, cost: 0, desc: 'Run comps', prop: true, stage: 'qualified' },
-            { id: 'show', name: 'Property Showing', time: 2, cost: 0, desc: 'Meet seller', prop: true, stage: 'analyzed' },
+            { id: 'show', name: 'Call/Meet with Seller', time: 2, cost: 0, desc: 'Meet seller', prop: true, stage: 'analyzed' },
             { id: 'follow', name: 'Follow Up', time: 1, cost: 0, desc: 'Build rapport', prop: true, stage: 'followup' },
             { id: 'negotiate', name: 'Negotiate', time: 3, cost: 0, desc: 'Work terms', prop: true, stage: 'negotiation' },
             { id: 'revise', name: 'Revise Offer', time: 1, cost: 0, desc: 'New offer', prop: true, stage: 'revision' },
             { id: 'buyers', name: 'Contact Buyers', time: 4, cost: 0, desc: 'Reach buyers', prop: true, stage: 'contract' },
-            { id: 'maxdispo', name: 'Dispo with MaxDispo.com', time: 0.5, cost: 0, desc: 'Quick close (50% fee)', prop: true, stage: 'contract', minVal: 10000 },
+            { id: 'maxdispo', name: 'Dispo with MaxDispo.com', time: 0.5, cost: 0, desc: 'Quick close (50% fee)', prop: true, stage: 'contract', minVal: 8000, reqUpg: 'maxd' },
             { id: 'admin', name: 'Admin Tasks', time: 2, cost: 0, desc: 'Paperwork', prop: false }
         ];
 
+        function calcOfflineProgress() {
+            if (!g.lastPlayTime) {
+                g.lastPlayTime = Date.now();
+                return null;
+            }
+
+            const now = Date.now();
+            const timeAway = now - g.lastPlayTime;
+            const hoursAway = timeAway / (1000 * 60 * 60);
+
+            // Cap offline progress at 8 hours
+            const effectiveHours = Math.min(hoursAway, 8);
+
+            if (effectiveHours < 0.5) return null; // Ignore if less than 30 minutes
+
+            let leadsGenerated = 0;
+            let dealsProcessed = 0;
+            let cashEarned = 0;
+
+            // Calculate leads from VAs (5-10 leads every 8 hours per VA)
+            const vaCount = g.team.filter(m => m.role === 'VA').length;
+            if (vaCount > 0) {
+                const cycles = Math.floor(effectiveHours / 8);
+                const partialCycle = (effectiveHours % 8) / 8;
+
+                for (let i = 0; i < vaCount; i++) {
+                    const va = g.team.filter(m => m.role === 'VA')[i];
+                    const efficiency = (va.eff || 50) / 100;
+
+                    // Full cycles
+                    for (let c = 0; c < cycles; c++) {
+                        const leads = Math.floor((Math.random() * 6 + 5) * efficiency); // 5-10 leads * efficiency
+                        leadsGenerated += leads;
+                    }
+
+                    // Partial cycle
+                    if (partialCycle > 0) {
+                        const leads = Math.floor((Math.random() * 6 + 5) * efficiency * partialCycle);
+                        leadsGenerated += leads;
+                    }
+                }
+            }
+
+            g.lastPlayTime = now;
+
+            return {
+                hoursAway: Math.floor(effectiveHours * 10) / 10,
+                leadsGenerated,
+                dealsProcessed,
+                cashEarned
+            };
+        }
+
+        function showOfflinePopup(progress) {
+            if (!progress || progress.leadsGenerated === 0) return;
+
+            const modal = document.getElementById('modal');
+            const title = document.getElementById('modalTitle');
+            const body = document.getElementById('modalBody');
+
+            title.textContent = '⏰ While You Were Away...';
+            body.innerHTML = `
+                <div style="text-align:center; padding:20px 0;">
+                    <div style="font-size:48px; margin-bottom:20px;">💼</div>
+                    <div style="font-size:18px; margin-bottom:25px; color:#718096;">
+                        You were away for ${progress.hoursAway} hours
+                    </div>
+                    ${progress.leadsGenerated > 0 ? `
+                        <div class="info-row">
+                            <span class="info-label">Leads Generated:</span>
+                            <span class="info-value" style="color:#48bb78;">+${progress.leadsGenerated}</span>
+                        </div>
+                    ` : ''}
+                    ${progress.dealsProcessed > 0 ? `
+                        <div class="info-row">
+                            <span class="info-label">Deals Processed:</span>
+                            <span class="info-value" style="color:#48bb78;">+${progress.dealsProcessed}</span>
+                        </div>
+                    ` : ''}
+                    ${progress.cashEarned > 0 ? `
+                        <div class="info-row">
+                            <span class="info-label">Cash Earned:</span>
+                            <span class="info-value" style="color:#48bb78;">+$${progress.cashEarned.toLocaleString()}</span>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+
+            modal.classList.add('active');
+        }
+
         function init() {
             load();
+
+            // Calculate and show offline progress
+            const offlineProgress = calcOfflineProgress();
+            if (offlineProgress && offlineProgress.leadsGenerated > 0) {
+                genLeads(offlineProgress.leadsGenerated);
+                showOfflinePopup(offlineProgress);
+            }
+
             document.querySelectorAll('.nav-button').forEach(b => b.addEventListener('click', function() { showSec(this.dataset.section); }));
             document.getElementById('advanceWeekBtn').addEventListener('click', advWeek);
             document.getElementById('resetBtn').addEventListener('click', reset);
@@ -206,6 +318,7 @@
             renderHire();
             renderUpg();
             renderDeals();
+            renderStats();
             updateUI();
         }
 
@@ -214,10 +327,34 @@
             document.querySelectorAll('.nav-button').forEach(b => b.classList.remove('active'));
             document.getElementById('content-' + s).style.display = 'block';
             document.querySelector('[data-section="' + s + '"]').classList.add('active');
+            if (s === 'stats') renderStats();
         }
 
         function renderActs() {
             const grid = document.getElementById('actionGrid');
+
+            // Calculate pipeline counts
+            const pipelineCounts = {
+                lead: g.deals.filter(d => d.stage === 'lead').length,
+                qualified: g.deals.filter(d => d.stage === 'qualified').length,
+                analyzed: g.deals.filter(d => d.stage === 'analyzed').length,
+                followup: g.deals.filter(d => d.stage === 'followup').length,
+                revision: g.deals.filter(d => d.stage === 'revision').length,
+                negotiation: g.deals.filter(d => d.stage === 'negotiation').length,
+                contract: g.deals.filter(d => d.stage === 'contract').length
+            };
+
+            // Update section title with pipeline counts
+            const titleEl = document.getElementById('actionsSectionTitle');
+            titleEl.innerHTML = `Weekly Actions <span style="font-size: 14px; color: #718096; font-weight: normal; margin-left: 15px;">
+                📥 Leads: ${pipelineCounts.lead} |
+                ✅ Qualified: ${pipelineCounts.qualified} |
+                📊 Analyzed: ${pipelineCounts.analyzed} |
+                📞 Follow-up: ${pipelineCounts.followup} |
+                📝 Negotiation: ${pipelineCounts.negotiation + pipelineCounts.revision} |
+                📄 Contract: ${pipelineCounts.contract}
+            </span>`;
+
             let h = '';
 
             mkOpts.forEach(o => {
@@ -243,10 +380,17 @@
             });
 
             acts.forEach(a => {
-                const ok = g.cash >= a.cost && g.timeLeft >= a.time;
-                h += `<div class="action-card ${!ok ? 'disabled' : ''}" onclick="${ok ? `doAct('${a.id}')` : ''}">
-                    <div class="action-title">${a.name}</div><div class="action-cost">${a.desc}</div>
-                    <div style="margin-top:10px;"><span class="time-badge">⏱️ ${a.time}h</span>${a.cost > 0 ? '<span class="cost-badge">💰 $' + a.cost + '</span>' : ''}</div></div>`;
+                const blocked = g.adminBlocked && a.prop;
+                const isAdmin = a.id === 'admin';
+                const adminRequired = g.adminBlocked && isAdmin;
+                const hasUpg = !a.reqUpg || g.upgrades[a.reqUpg];
+                const upgLocked = a.reqUpg && !g.upgrades[a.reqUpg];
+                const ok = g.cash >= a.cost && g.timeLeft >= a.time && !blocked && hasUpg;
+                const highlight = adminRequired ? ' style="border: 3px solid #f56565; box-shadow: 0 0 20px rgba(245,101,101,0.5);"' : '';
+                const lockMsg = upgLocked ? `Need ${upg[a.reqUpg].name}` : '';
+                h += `<div class="action-card ${!ok || blocked || upgLocked ? 'disabled' : ''}" onclick="${ok && !blocked && !upgLocked ? `doAct('${a.id}')` : ''}"${highlight}>
+                    <div class="action-title">${a.name}${blocked ? ' 🔒' : ''}${upgLocked ? ' 🔒' : ''}${adminRequired ? ' ⚠️ URGENT' : ''}</div><div class="action-cost">${a.desc}</div>
+                    <div style="margin-top:10px;"><span class="time-badge">⏱️ ${a.time}h</span>${a.cost > 0 ? '<span class="cost-badge">💰 $' + a.cost + '</span>' : ''}${blocked ? '<div class="locked-badge">Admin work needed!</div>' : ''}${upgLocked && lockMsg ? '<div class="locked-badge">' + lockMsg + '</div>' : ''}</div></div>`;
             });
 
             grid.innerHTML = h;
@@ -258,19 +402,31 @@
             g.cash -= o.cost;
             if (o.time) g.timeLeft -= o.time;
 
-            // 25% chance of getting 0 leads (except for PPL)
-            if (id !== 'ppl' && Math.random() < 0.25) {
-                notify(`${o.name}: No leads.`);
-                updateUI();
-                renderActs();
-                renderDeals();
-                save();
-                return;
+            let leadCnt;
+
+            // Handle probabilistic lead generation (e.g., 0.15 = 15% chance of 1 lead)
+            if (typeof o.leads === 'number' && o.leads < 1) {
+                leadCnt = Math.random() < o.leads ? 1 : 0;
+            } else if (Array.isArray(o.leads)) {
+                leadCnt = Math.floor(Math.random() * (o.leads[1] - o.leads[0] + 1)) + o.leads[0];
+            } else {
+                leadCnt = o.leads;
             }
 
-            const leadCnt = Array.isArray(o.leads) ? Math.floor(Math.random() * (o.leads[1] - o.leads[0] + 1)) + o.leads[0] : o.leads;
-            genLeads(leadCnt);
-            notify(`${o.name}: ${leadCnt} leads!`, 'advance');
+            // Apply upgrade modifiers
+            if (id === 'gov' && g.upgrades.skipTrace) {
+                leadCnt = Math.floor(Math.random() * 4) + 2; // 2-5 leads
+            } else if (id === 'gov' && g.upgrades.xleads) {
+                leadCnt = Math.floor(Math.random() * 11) + 10; // 10-20 leads
+            }
+
+            if (leadCnt === 0) {
+                notify(`${o.name}: No leads.`);
+            } else {
+                genLeads(leadCnt);
+                notify(`${o.name}: ${leadCnt} lead${leadCnt > 1 ? 's' : ''}!`, 'advance');
+            }
+
             updateUI();
             renderActs();
             renderDeals();
@@ -296,18 +452,11 @@
             const contacted = leadPool.slice(0, toContact);
             g.deals = g.deals.filter(d => !contacted.includes(d));
 
-            // 25% chance of getting 0 qualified
-            if (Math.random() < 0.25) {
-                notify(`${o.name}: Contacted ${toContact}, none qualified.`);
-                updateUI();
-                renderActs();
-                renderDeals();
-                save();
-                return;
-            }
-
             let r = Array.isArray(o.rate) ? Math.random() * (o.rate[1] - o.rate[0]) + o.rate[0] : o.rate;
-            if (id === 'text' && g.upgrades.drip) r *= 2;
+
+            // Apply upgrade bonuses
+            if (id === 'textBlast' && g.upgrades.textDrip) r *= 1.5;
+
             let q = Math.floor(toContact * r);
 
             if (q > 0) {
@@ -331,6 +480,10 @@
             const a = acts.find(x => x.id === id);
             if (!a || g.timeLeft < a.time || g.cash < a.cost) {
                 notify('Not enough time/cash!');
+                return;
+            }
+            if (a.reqUpg && !g.upgrades[a.reqUpg]) {
+                notify(`Need ${upg[a.reqUpg].name} upgrade!`);
                 return;
             }
             if (a.prop) {
@@ -383,7 +536,8 @@
 
             switch(a.id) {
                 case 'analyze':
-                    if (p && Math.random() > 0.3) {
+                    // 60% success, 40% fail
+                    if (p && Math.random() < 0.60) {
                         p.stage = 'analyzed';
                         notify(`${p.address} analyzed!`, 'advance');
                     } else {
@@ -392,50 +546,68 @@
                     }
                     break;
                 case 'show':
-                    if (p && Math.random() > 0.5) {
+                    // 30% → negotiation, 50% → followup, 20% → dead
+                    const showRoll = Math.random();
+                    if (p && showRoll < 0.30) {
                         p.stage = 'negotiation';
                         notify(`${p.address} interested!`, 'advance');
-                    } else {
+                    } else if (showRoll < 0.80) {
                         p.stage = 'followup';
                         notify(`${p.address} needs time.`);
+                    } else {
+                        g.deals = g.deals.filter(d => d.id !== p.id);
+                        notify(`${p.address} fell through.`);
                     }
                     break;
                 case 'follow':
-                    if (p && Math.random() > 0.6) {
+                    // 30% → negotiation, 50% → stay in followup, 20% → dead
+                    const followRoll = Math.random();
+                    if (p && followRoll < 0.30) {
                         p.stage = 'negotiation';
                         notify(`${p.address} ready!`, 'advance');
+                    } else if (followRoll < 0.80) {
+                        notify(`${p.address} still thinking.`);
                     } else {
-                        if (Math.random() > 0.5) p.stage = 'revision';
-                        notify(`${p.address} ${p.stage === 'revision' ? 'wants revision' : 'still thinking'}.`);
+                        g.deals = g.deals.filter(d => d.id !== p.id);
+                        notify(`${p.address} fell through.`);
                     }
                     break;
                 case 'revise':
-                    if (p && Math.random() > 0.65) {
+                    // Reduce profit by 20-30% and go back to analyzed
+                    if (p) {
+                        const reduction = Math.floor(p.value * (0.20 + Math.random() * 0.10));
+                        const oldVal = p.value;
+                        p.value = Math.max(1000, p.value - reduction);
                         p.stage = 'analyzed';
-                        notify(`${p.address} accepted!`, 'advance');
-                    } else {
-                        if (Math.random() > 0.5) {
-                            g.deals = g.deals.filter(d => d.id !== p.id);
-                            notify(`${p.address} fell through.`);
-                        } else {
-                            notify(`${p.address} try again.`);
-                        }
+                        notify(`${p.address} accepted! (Profit reduced: $${oldVal} → $${p.value})`, 'advance');
                     }
                     break;
                 case 'negotiate':
-                    if (p && Math.random() > 0.4) {
+                    // 25% → contract, 60% → revision, 15% → dead
+                    const negRoll = Math.random();
+                    if (p && negRoll < 0.25) {
                         p.stage = 'contract';
                         notify(`${p.address} signed!`, 'advance');
-                    } else {
+                    } else if (negRoll < 0.85) {
                         p.stage = 'revision';
-                        notify(`${p.address} revise.`);
+                        notify(`${p.address} needs better offer (will reduce profit).`);
+                    } else {
+                        g.deals = g.deals.filter(d => d.id !== p.id);
+                        notify(`${p.address} fell through.`);
                     }
                     break;
                 case 'buyers':
-                    if (p && Math.random() > 0.3) {
-                        closeDeal(p);
-                    } else {
-                        notify('Contacted buyers.');
+                    // 30% → close, 50% → try again, 20% → dead
+                    if (p) {
+                        const roll = Math.random();
+                        if (roll < 0.30) {
+                            closeDeal(p);
+                        } else if (roll < 0.80) {
+                            notify('Contacted buyers, no interest yet.');
+                        } else {
+                            g.deals = g.deals.filter(d => d.id !== p.id);
+                            notify(`${p.address} contract fell through! Buyer backed out.`);
+                        }
                     }
                     break;
                 case 'maxdispo':
@@ -445,7 +617,18 @@
                         let tot = halfVal;
                         if (dis) tot += dis.bonus;
                         g.cash += tot;
+                        g.totalProfit += tot;
                         g.dealsClosedTotal++;
+
+                        // Track closed deal
+                        g.closedDeals.push({
+                            address: p.address,
+                            profit: tot,
+                            week: g.week,
+                            baseValue: p.value,
+                            method: 'MaxDispo'
+                        });
+
                         g.deals = g.deals.filter(x => x.id !== p.id);
                         notify(`${p.address} closed via Max! $${tot} (50% fee) 🎉`, 'advance');
                         renderHire();
@@ -453,8 +636,15 @@
                     }
                     break;
                 case 'admin':
-                    notify('Admin done.');
+                    g.adminBlocked = false;
+                    notify('Admin tasks completed! Actions unlocked.', 'advance');
                     break;
+            }
+
+            // Random chance (15%) to require admin work after property actions
+            if (a.prop && Math.random() < 0.15 && !g.adminBlocked) {
+                g.adminBlocked = true;
+                notify('⚠️ Admin work piling up! Must complete admin tasks before continuing.', 'neutral');
             }
 
             updateUI();
@@ -469,7 +659,7 @@
                 g.deals.push({
                     id: Date.now() + i,
                     address: Math.floor(Math.random() * 9999) + 100 + ' Main St',
-                    value: Math.floor(Math.random() * 8000) + 3000,
+                    value: Math.floor(Math.random() * 12000) + 5000,
                     stage: stage,
                     week: g.week
                 });
@@ -482,7 +672,17 @@
             const dis = g.team.find(m => m.role === 'Dis');
             if (dis) tot += dis.bonus;
             g.cash += tot;
+            g.totalProfit += tot;
             g.dealsClosedTotal++;
+
+            // Track closed deal
+            g.closedDeals.push({
+                address: d.address,
+                profit: tot,
+                week: g.week,
+                baseValue: d.value
+            });
+
             g.deals = g.deals.filter(x => x.id !== d.id);
             notify(`${d.address} closed! $${tot} 🎉`, 'advance');
             updateUI();
@@ -500,6 +700,79 @@
                 return `<div class="pipeline-column"><div class="pipeline-title">${t} (${ds.length})</div>
                     ${ds.map(d => `<div class="deal-card"><div>${d.address}</div><div class="deal-value">$${d.value}</div></div>`).join('')}</div>`;
             }).join('');
+        }
+
+        function renderStats() {
+            const container = document.getElementById('statsContent');
+
+            // Title system based on total profit
+            const titles = [
+                { threshold: 0, title: '🌱 Rookie Wholesaler', color: '#718096' },
+                { threshold: 10000, title: '💼 Junior Deal Maker', color: '#4299e1' },
+                { threshold: 25000, title: '🎯 Skilled Wholesaler', color: '#48bb78' },
+                { threshold: 50000, title: '⭐ Expert Flipper', color: '#ed8936' },
+                { threshold: 100000, title: '💎 Master Wholesaler', color: '#9f7aea' },
+                { threshold: 250000, title: '👑 Elite Investor', color: '#f56565' },
+                { threshold: 500000, title: '🏆 Tycoon Legend', color: '#d69e2e' },
+                { threshold: 1000000, title: '🔥 Million Dollar Mogul', color: '#e53e3e' }
+            ];
+
+            let currentTitle = titles[0];
+            for (let i = titles.length - 1; i >= 0; i--) {
+                if (g.totalProfit >= titles[i].threshold) {
+                    currentTitle = titles[i];
+                    break;
+                }
+            }
+
+            const nextTitle = titles.find(t => t.threshold > g.totalProfit);
+            const avgProfit = g.closedDeals.length > 0 ? Math.floor(g.totalProfit / g.closedDeals.length) : 0;
+
+            let html = `
+                <div class="card" style="text-align: center; background: linear-gradient(135deg, ${currentTitle.color}20 0%, ${currentTitle.color}10 100%); border: 3px solid ${currentTitle.color};">
+                    <div style="font-size: 48px; margin-bottom: 10px;">${currentTitle.title.split(' ')[0]}</div>
+                    <div style="font-size: 28px; font-weight: bold; color: ${currentTitle.color}; margin-bottom: 10px;">
+                        ${currentTitle.title.substring(currentTitle.title.indexOf(' ') + 1)}
+                    </div>
+                    <div style="font-size: 16px; color: #718096; margin-bottom: 20px;">
+                        Total Profit: <span style="color: #48bb78; font-weight: bold;">$${g.totalProfit.toLocaleString()}</span>
+                    </div>
+                    ${nextTitle ? `<div style="font-size: 14px; color: #718096;">
+                        Next: ${nextTitle.title} at $${nextTitle.threshold.toLocaleString()}
+                        <div style="margin-top: 10px;"><div class="progress-bar" style="height: 12px;">
+                            <div class="progress-fill" style="width: ${Math.min(100, (g.totalProfit / nextTitle.threshold) * 100)}%"></div>
+                        </div></div>
+                    </div>` : '<div style="font-size: 14px; color: #48bb78; font-weight: bold;">🎉 MAX RANK ACHIEVED! 🎉</div>'}
+                </div>
+
+                <div class="card" style="margin-top: 20px;">
+                    <div class="card-title">📊 Career Statistics</div>
+                    <div class="info-row"><span class="info-label">Total Deals Closed:</span><span class="info-value">${g.dealsClosedTotal}</span></div>
+                    <div class="info-row"><span class="info-label">Total Profit Earned:</span><span class="info-value" style="color: #48bb78;">$${g.totalProfit.toLocaleString()}</span></div>
+                    <div class="info-row"><span class="info-label">Average Profit/Deal:</span><span class="info-value">$${avgProfit.toLocaleString()}</span></div>
+                    <div class="info-row"><span class="info-label">Current Week:</span><span class="info-value">${g.week}</span></div>
+                    <div class="info-row"><span class="info-label">Current Cash:</span><span class="info-value" style="color: ${g.cash >= 0 ? '#48bb78' : '#f56565'};">$${g.cash.toLocaleString()}</span></div>
+                </div>
+
+                <div class="card" style="margin-top: 20px;">
+                    <div class="card-title">📜 Deal History (Recent ${Math.min(10, g.closedDeals.length)})</div>
+                    ${g.closedDeals.length === 0 ?
+                        '<div style="text-align: center; padding: 40px; color: #718096;"><div style="font-size: 48px; margin-bottom: 15px;">📭</div><div>No closed deals yet. Get out there and close some deals!</div></div>' :
+                        '<div style="max-height: 400px; overflow-y: auto;">' +
+                        g.closedDeals.slice().reverse().slice(0, 10).map(d => `
+                            <div class="info-row" style="padding: 12px 0;">
+                                <div>
+                                    <div style="font-weight: bold;">${d.address}</div>
+                                    <div style="font-size: 12px; color: #718096;">Week ${d.week}${d.method ? ' • ' + d.method : ''}</div>
+                                </div>
+                                <div style="font-weight: bold; color: #48bb78; font-size: 16px;">$${d.profit.toLocaleString()}</div>
+                            </div>
+                        `).join('') + '</div>'
+                    }
+                </div>
+            `;
+
+            container.innerHTML = html;
         }
 
         function renderTeam() {
@@ -543,7 +816,8 @@
                 const ok = g.cash >= u.cost && (!u.reqD || g.dealsClosedTotal >= u.reqD) && !own;
                 return `<div class="hire-card"><div class="card-title">${u.name} ${own ? '✓' : ''}</div>
                     <div style="color:#718096;margin-bottom:15px;font-size:14px;">${u.ben}</div>
-                    <div class="info-row"><span class="info-label">Cost:</span><span class="info-value">${u.cost === 0 ? 'FREE' : '$' + u.cost}${u.monthly ? '/mo' : ''}</span></div>
+                    <div class="info-row"><span class="info-label">Cost:</span><span class="info-value">${u.cost === 0 ? 'FREE' : '$' + u.cost.toLocaleString()}</span></div>
+                    ${u.monthly ? `<div class="info-row"><span class="info-label">Monthly:</span><span class="info-value">$${u.monthly}/mo</span></div>` : ''}
                     ${u.reqD ? `<div class="info-row"><span class="info-label">Requires:</span><span class="info-value">${u.reqD} deals</span></div>` : ''}
                     <div style="margin-top:15px;"><button class="button ${ok ? 'button-success' : ''}" onclick="buyUpg('${k}')" ${!ok ? 'disabled' : ''}>
                     ${own ? 'Owned' : (ok ? 'Buy' : 'Locked')}</button></div></div>`;
@@ -588,7 +862,12 @@
         function advWeek() {
             if (g.week % 4 === 0) {
                 let costs = g.team.reduce((sum, m) => sum + m.cost, 0);
-                if (g.upgrades.enzo) costs += 225;
+                // Add monthly costs from upgrades
+                Object.entries(upg).forEach(([k, u]) => {
+                    if (g.upgrades[k] && u.monthly) {
+                        costs += u.monthly;
+                    }
+                });
                 if (g.cash < costs) {
                     showMod('💸 Cash Crisis!', `<p style="color:#f56565;margin-bottom:15px;">Can't pay expenses!</p>
                         <div class="info-row"><span class="info-label">Expenses:</span><span class="info-value">$${costs}</span></div>
@@ -615,6 +894,12 @@
             g.team.forEach(m => { g.timeLeft += Math.floor(m.time * (m.eff / 100)); });
             if (g.upgrades.enzo) g.timeLeft += 30;
 
+            // Clear admin block at start of new week
+            if (g.adminBlocked) {
+                g.adminBlocked = false;
+                notify('Admin slate cleared for new week!', 'advance');
+            }
+
             updateUI();
             renderDeals();
             renderActs();
@@ -627,10 +912,32 @@
             document.getElementById('week').textContent = g.week;
             document.getElementById('dealsCount').textContent = g.dealsClosedTotal;
             document.getElementById('timeLeft').textContent = g.timeLeft;
+
+            // Auto-advance to next week if time runs out
+            if (g.timeLeft <= 0 && !autoAdvancing) {
+                autoAdvancing = true;
+                setTimeout(() => {
+                    notify('Week ended - out of time! Auto-advancing...', 'advance');
+                    setTimeout(() => {
+                        advWeek();
+                        autoAdvancing = false;
+                    }, 1000);
+                }, 500);
+            }
         }
 
         function notify(msg, type) {
-            type = type || 'neutral';
+            notifQueue.push({ msg, type: type || 'neutral' });
+            if (!notifActive) showNextNotif();
+        }
+
+        function showNextNotif() {
+            if (notifQueue.length === 0) {
+                notifActive = false;
+                return;
+            }
+            notifActive = true;
+            const { msg, type } = notifQueue.shift();
             const n = document.createElement('div');
             n.className = 'notification';
             if (type === 'advance') {
@@ -642,7 +949,10 @@
             }
             n.textContent = msg;
             document.body.appendChild(n);
-            setTimeout(() => n.remove(), 3000);
+            setTimeout(() => {
+                n.remove();
+                showNextNotif();
+            }, 800);
         }
 
         function showMod(title, body) {
@@ -656,6 +966,7 @@
         }
 
         function save() {
+            g.lastPlayTime = Date.now();
             localStorage.setItem('teamBuildingTycoon', JSON.stringify(g));
         }
 
