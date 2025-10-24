@@ -172,9 +172,9 @@
         ];
 
         const contact = [
-            { id: 'call', name: 'Cold Call Single Lead', time: 0.5, cost: 0, desc: 'Call 1 lead', cnt: 1, rate: [0.10, 0.15] },
+            { id: 'call', name: 'Cold Call Single Lead', time: 0.5, cost: 0, desc: 'Call 1 lead', cnt: 1, rate: [0.15, 0.20] },
             { id: 'text', name: 'Text Single Lead', time: 0.1, cost: 2, desc: 'Text 1 lead ($2)', cnt: 1, rate: [0.05, 0.08] },
-            { id: 'batchCall', name: 'Batch Call (5 leads)', time: 2, cost: 0, desc: 'Call 5 leads at once', cnt: 5, rate: [0.10, 0.15], reqUpg: 'batchDialer' },
+            { id: 'batchCall', name: 'Batch Call (5 leads)', time: 2, cost: 0, desc: 'Call 5 leads at once', cnt: 5, rate: [0.15, 0.20], reqUpg: 'batchDialer' },
             { id: 'rvm', name: 'Send RVMs', time: 0.5, cost: 50, desc: '100 RVMs ($50)', cnt: 100, rate: [0.01, 0.03], reqUpg: 'rvm' },
             { id: 'textBlast', name: 'Text Blast Campaign', time: 1, cost: 200, desc: '1000 texts ($200)', cnt: 1000, rate: [0.03, 0.08], reqUpg: 'textDrip' }
         ];
@@ -457,7 +457,14 @@
             // Apply upgrade bonuses
             if (id === 'textBlast' && g.upgrades.textDrip) r *= 1.5;
 
-            let q = Math.floor(toContact * r);
+            let q = 0;
+
+            // For single contacts, use probability; for batches, use rate multiplication
+            if (toContact === 1) {
+                q = Math.random() < r ? 1 : 0;
+            } else {
+                q = Math.floor(toContact * r);
+            }
 
             if (q > 0) {
                 // Convert contacted leads to qualified
@@ -952,7 +959,7 @@
             setTimeout(() => {
                 n.remove();
                 showNextNotif();
-            }, 800);
+            }, 500);
         }
 
         function showMod(title, body) {
