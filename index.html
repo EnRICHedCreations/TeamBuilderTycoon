@@ -4,81 +4,92 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Team Builder Tycoon - Wholesaling Game</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
+        :root {
+            --bg-dark: #171717;
+            --card-dark: #202020;
+            --text-light: #f0f0f0;
+            --text-faded: #b0b0b0;
+            --primary-gradient: linear-gradient(90deg, #7c6338, #ad9051);
+            --border-color: #333;
+            --success-color: #4CAF50;
+            --error-color: #F44336;
+        }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #333; min-height: 100vh; padding: 20px; }
-        .game-container { max-width: 1400px; margin: 0 auto; background: white; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden; }
-        .game-header { background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%); color: white; padding: 20px 30px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
-        .game-title { font-size: 28px; font-weight: bold; }
+        body { font-family: 'Roboto', sans-serif; background: var(--bg-dark); color: var(--text-light); min-height: 100vh; padding: 20px; }
+        .game-container { max-width: 1400px; margin: 0 auto; background: var(--card-dark); border-radius: 10px; box-shadow: 0 8px 15px rgba(0,0,0,0.3); overflow: hidden; border: 1px solid var(--border-color); }
+        .game-header { background: var(--card-dark); color: var(--text-light); padding: 20px 30px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; border-bottom: 2px solid var(--border-color); }
+        .game-title { font-size: 28px; font-weight: 700; background: var(--primary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .stats-bar { display: flex; gap: 25px; flex-wrap: wrap; }
         .stat { display: flex; flex-direction: column; align-items: center; }
-        .stat-label { font-size: 11px; text-transform: uppercase; opacity: 0.8; margin-bottom: 3px; }
+        .stat-label { font-size: 11px; text-transform: uppercase; opacity: 0.8; margin-bottom: 3px; color: var(--text-faded); }
         .stat-value { font-size: 18px; font-weight: bold; }
-        .cash { color: #48bb78; }
+        .cash { background: var(--primary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .week { color: #90cdf4; }
-        .deals { color: #fbd38d; }
+        .deals { color: #ad9051; }
         .game-content { display: grid; grid-template-columns: 250px 1fr; min-height: 700px; }
-        .sidebar { background: #f7fafc; border-right: 2px solid #e2e8f0; padding: 20px; }
-        .nav-button { width: 100%; padding: 12px 15px; margin-bottom: 8px; background: white; border: 2px solid #e2e8f0; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.2s; text-align: left; }
-        .nav-button:hover { background: #edf2f7; border-color: #cbd5e0; }
-        .nav-button.active { background: #667eea; color: white; border-color: #667eea; }
-        .main-content { padding: 30px; overflow-y: auto; max-height: 700px; }
-        .section-title { font-size: 24px; font-weight: bold; margin-bottom: 20px; color: #2d3748; }
-        .card { background: white; border: 2px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-bottom: 15px; }
-        .card-title { font-size: 18px; font-weight: bold; margin-bottom: 12px; color: #2d3748; }
-        .button { padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 14px; transition: all 0.2s; }
-        .button:hover:not(:disabled) { background: #5568d3; transform: translateY(-1px); }
-        .button:disabled { background: #cbd5e0; cursor: not-allowed; transform: none; }
+        .sidebar { background: #252525; border-right: 1px solid var(--border-color); padding: 20px; }
+        .nav-button { width: 100%; padding: 12px 15px; margin-bottom: 8px; background: var(--card-dark); border: 1px solid var(--border-color); border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.2s; text-align: left; color: var(--text-light); }
+        .nav-button:hover { background: #2a2a2a; border-color: #ad9051; }
+        .nav-button.active { background: var(--primary-gradient); color: var(--bg-dark); border-color: #ad9051; }
+        .main-content { padding: 30px; overflow-y: auto; max-height: 700px; background: var(--bg-dark); }
+        .section-title { font-size: 24px; font-weight: 700; margin-bottom: 20px; color: var(--text-light); border-bottom: 2px solid var(--border-color); padding-bottom: 10px; }
+        .card { background: var(--card-dark); border: 1px solid var(--border-color); border-radius: 10px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        .card-title { font-size: 18px; font-weight: 700; margin-bottom: 12px; color: var(--text-light); }
+        .button { padding: 10px 20px; background: var(--primary-gradient); color: var(--bg-dark); border: none; border-radius: 6px; cursor: pointer; font-weight: 700; font-size: 14px; transition: all 0.3s; }
+        .button:hover:not(:disabled) { opacity: 0.9; transform: translateY(-1px); }
+        .button:disabled { background: #333; color: var(--text-faded); cursor: not-allowed; transform: none; }
         .button-small { padding: 6px 12px; font-size: 12px; }
-        .button-success { background: #48bb78; }
-        .button-success:hover:not(:disabled) { background: #38a169; }
-        .button-danger { background: #f56565; }
-        .button-danger:hover { background: #e53e3e; }
+        .button-success { background: var(--primary-gradient); }
+        .button-success:hover:not(:disabled) { opacity: 0.9; }
+        .button-danger { background: var(--error-color); color: white; }
+        .button-danger:hover { opacity: 0.9; }
         .team-grid, .hire-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; }
-        .team-member, .hire-card { border: 2px solid #e2e8f0; border-radius: 12px; padding: 15px; background: #f7fafc; }
-        .hire-card { background: white; transition: all 0.2s; }
-        .hire-card:hover { border-color: #667eea; box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15); }
+        .team-member, .hire-card { border: 1px solid var(--border-color); border-radius: 10px; padding: 15px; background: #252525; }
+        .hire-card { background: var(--card-dark); transition: all 0.2s; }
+        .hire-card:hover { border-color: #ad9051; box-shadow: 0 4px 12px rgba(173, 144, 81, 0.2); }
         .team-member-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px; }
-        .team-member-name { font-weight: bold; font-size: 16px; }
-        .team-member-role { font-size: 12px; color: #718096; margin-bottom: 8px; }
-        .progress-bar { background: #e2e8f0; height: 8px; border-radius: 4px; overflow: hidden; margin: 8px 0; }
-        .progress-fill { height: 100%; background: #48bb78; transition: width 0.3s; }
+        .team-member-name { font-weight: bold; font-size: 16px; color: var(--text-light); }
+        .team-member-role { font-size: 12px; color: var(--text-faded); margin-bottom: 8px; }
+        .progress-bar { background: #333; height: 8px; border-radius: 4px; overflow: hidden; margin: 8px 0; }
+        .progress-fill { height: 100%; background: var(--primary-gradient); transition: width 0.3s; }
         .deal-pipeline { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 20px; }
-        .pipeline-column { background: #f7fafc; border-radius: 12px; padding: 15px; min-height: 200px; }
-        .pipeline-title { font-weight: bold; margin-bottom: 12px; color: #2d3748; font-size: 14px; }
-        .deal-card { background: white; border: 2px solid #e2e8f0; border-radius: 8px; padding: 12px; margin-bottom: 8px; font-size: 13px; cursor: pointer; transition: all 0.2s; }
-        .deal-card:hover { border-color: #667eea; box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15); }
-        .deal-value { font-weight: bold; color: #48bb78; margin-top: 5px; }
+        .pipeline-column { background: #252525; border-radius: 10px; padding: 15px; min-height: 200px; border: 1px solid var(--border-color); }
+        .pipeline-title { font-weight: bold; margin-bottom: 12px; color: var(--text-light); font-size: 14px; }
+        .deal-card { background: var(--card-dark); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; margin-bottom: 8px; font-size: 13px; cursor: pointer; transition: all 0.2s; }
+        .deal-card:hover { border-color: #ad9051; box-shadow: 0 2px 8px rgba(173, 144, 81, 0.3); }
+        .deal-value { font-weight: bold; background: var(--primary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-top: 5px; }
         .action-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px; }
-        .action-card { border: 2px solid #e2e8f0; border-radius: 12px; padding: 20px; background: white; cursor: pointer; transition: all 0.2s; }
-        .action-card:hover:not(.disabled) { border-color: #667eea; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15); }
+        .action-card { border: 1px solid var(--border-color); border-radius: 10px; padding: 20px; background: var(--card-dark); cursor: pointer; transition: all 0.2s; }
+        .action-card:hover:not(.disabled) { border-color: #ad9051; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(173, 144, 81, 0.2); }
         .action-card.disabled { opacity: 0.5; cursor: not-allowed; }
-        .action-title { font-weight: bold; font-size: 16px; margin-bottom: 8px; }
-        .action-cost { color: #718096; font-size: 13px; margin-bottom: 8px; }
-        .time-badge { display: inline-block; background: #fbd38d; color: #744210; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
-        .cost-badge { display: inline-block; background: #48bb78; color: white; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; margin-left: 5px; }
-        .locked-badge { display: inline-block; background: #f56565; color: white; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; margin-top: 5px; }
-        .notification { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; border-left: 6px solid #48bb78; padding: 25px 35px; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.3); max-width: 500px; font-size: 18px; font-weight: 600; animation: popIn 0.3s; z-index: 1000; text-align: center; }
+        .action-title { font-weight: bold; font-size: 16px; margin-bottom: 8px; color: var(--text-light); }
+        .action-cost { color: var(--text-faded); font-size: 13px; margin-bottom: 8px; }
+        .time-badge { display: inline-block; background: #333; color: #ad9051; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; border: 1px solid #ad9051; }
+        .cost-badge { display: inline-block; background: var(--primary-gradient); color: var(--bg-dark); padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; margin-left: 5px; }
+        .locked-badge { display: inline-block; background: var(--error-color); color: white; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; margin-top: 5px; }
+        .notification { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--card-dark); border-left: 6px solid #ad9051; padding: 25px 35px; border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.5); max-width: 500px; font-size: 18px; font-weight: 600; animation: popIn 0.3s; z-index: 1000; text-align: center; color: black; border: 1px solid var(--border-color); }
         @keyframes popIn { from { transform: translate(-50%, -50%) scale(0.8); opacity: 0; } to { transform: translate(-50%, -50%) scale(1); opacity: 1; } }
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; align-items: center; justify-content: center; }
         .modal.active { display: flex; }
-        .modal-content { background: white; border-radius: 16px; padding: 30px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto; }
-        .modal-title { font-size: 24px; font-weight: bold; margin-bottom: 15px; }
+        .modal-content { background: var(--card-dark); border-radius: 10px; padding: 30px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto; border: 1px solid var(--border-color); }
+        .modal-title { font-size: 24px; font-weight: bold; margin-bottom: 15px; color: var(--text-light); }
         .modal-buttons { display: flex; gap: 10px; margin-top: 20px; }
-        .info-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e2e8f0; }
-        .info-label { color: #718096; font-size: 14px; }
-        .info-value { font-weight: 600; font-size: 14px; }
+        .info-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border-color); }
+        .info-label { color: var(--text-faded); font-size: 14px; }
+        .info-value { font-weight: 600; font-size: 14px; color: var(--text-light); }
         .property-list { max-height: 300px; overflow-y: auto; margin: 15px 0; }
-        .property-option { border: 2px solid #e2e8f0; border-radius: 8px; padding: 12px; margin-bottom: 8px; cursor: pointer; transition: all 0.2s; }
-        .property-option:hover { border-color: #667eea; background: #f7fafc; }
-        .property-option.selected { border-color: #667eea; background: #edf2f7; }
-        @media (max-width: 768px) { .game-content { grid-template-columns: 1fr; } .sidebar { border-right: none; border-bottom: 2px solid #e2e8f0; } }
+        .property-option { border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; margin-bottom: 8px; cursor: pointer; transition: all 0.2s; background: #252525; }
+        .property-option:hover { border-color: #ad9051; background: #2a2a2a; }
+        .property-option.selected { border-color: #ad9051; background: #333; }
+        @media (max-width: 768px) { .game-content { grid-template-columns: 1fr; } .sidebar { border-right: none; border-bottom: 1px solid var(--border-color); } }
     </style>
 </head>
 <body>
     <div class="game-container">
         <div class="game-header">
-            <div class="game-title">🏢 Team Builder Tycoon - Build Your Wholesaling Empire</div>
+            <div class="game-title"><i class="fa-solid fa-building"></i> Team Builder Tycoon - Build Your Wholesaling Empire</div>
             <div class="stats-bar">
                 <div class="stat"><div class="stat-label">Cash</div><div class="stat-value cash">$<span id="cash">0</span></div></div>
                 <div class="stat"><div class="stat-label">Week</div><div class="stat-value week"><span id="week">1</span></div></div>
@@ -88,20 +99,20 @@
         </div>
         <div class="game-content">
             <div class="sidebar">
-                <button class="nav-button active" data-section="actions">📋 Actions</button>
-                <button class="nav-button" data-section="deals">💼 Deals</button>
-                <button class="nav-button" data-section="team">👥 Team</button>
-                <button class="nav-button" data-section="hire">➕ Hire</button>
-                <button class="nav-button" data-section="upgrades">⬆️ Upgrades</button>
-                <button class="nav-button" data-section="stats">📊 Stats</button>
-                <button class="nav-button" data-section="settings">⚙️ Settings</button>
+                <button class="nav-button active" data-section="actions"><i class="fa-solid fa-list-check"></i> Actions</button>
+                <button class="nav-button" data-section="deals"><i class="fa-solid fa-briefcase"></i> Deals</button>
+                <button class="nav-button" data-section="team"><i class="fa-solid fa-users"></i> Team</button>
+                <button class="nav-button" data-section="hire"><i class="fa-solid fa-plus"></i> Hire</button>
+                <button class="nav-button" data-section="upgrades"><i class="fa-solid fa-arrow-up"></i> Upgrades</button>
+                <button class="nav-button" data-section="stats"><i class="fa-solid fa-chart-bar"></i> Stats</button>
+                <button class="nav-button" data-section="settings"><i class="fa-solid fa-gear"></i> Settings</button>
             </div>
             <div class="main-content">
                 <div id="content-actions" class="content-section">
                     <div class="section-title" id="actionsSectionTitle">Weekly Actions</div>
                     <div class="action-grid" id="actionGrid"></div>
                     <div style="margin-top: 30px;">
-                        <button class="button button-success" id="advanceWeekBtn" style="font-size: 16px; padding: 15px 30px;">⏭️ Advance to Next Week</button>
+                        <button class="button button-success" id="advanceWeekBtn" style="font-size: 16px; padding: 15px 30px;"><i class="fa-solid fa-forward"></i> Advance to Next Week</button>
                     </div>
                 </div>
                 <div id="content-deals" class="content-section" style="display:none;">
@@ -112,7 +123,7 @@
                     <div class="section-title">My Team</div>
                     <div class="team-grid" id="teamGrid"></div>
                     <div id="soloMessage" style="text-align: center; padding: 40px; color: #718096;">
-                        <div style="font-size: 48px; margin-bottom: 15px;">🦸</div>
+                        <div style="font-size: 48px; margin-bottom: 15px;"><i class="fa-solid fa-user-shield"></i></div>
                         <div style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">Flying Solo!</div>
                         <div>You haven't hired anyone yet. Check the Hire tab when you're ready to build your team.</div>
                     </div>
@@ -266,10 +277,10 @@
             const title = document.getElementById('modalTitle');
             const body = document.getElementById('modalBody');
 
-            title.textContent = '⏰ While You Were Away...';
+            title.innerHTML = '<i class="fa-solid fa-clock"></i> While You Were Away...';
             body.innerHTML = `
                 <div style="text-align:center; padding:20px 0;">
-                    <div style="font-size:48px; margin-bottom:20px;">💼</div>
+                    <div style="font-size:48px; margin-bottom:20px;"><i class="fa-solid fa-briefcase"></i></div>
                     <div style="font-size:18px; margin-bottom:25px; color:#718096;">
                         You were away for ${progress.hoursAway} hours
                     </div>
@@ -347,12 +358,12 @@
             // Update section title with pipeline counts
             const titleEl = document.getElementById('actionsSectionTitle');
             titleEl.innerHTML = `Weekly Actions <span style="font-size: 14px; color: #718096; font-weight: normal; margin-left: 15px;">
-                📥 Leads: ${pipelineCounts.lead} |
-                ✅ Qualified: ${pipelineCounts.qualified} |
-                📊 Analyzed: ${pipelineCounts.analyzed} |
-                📞 Follow-up: ${pipelineCounts.followup} |
-                📝 Negotiation: ${pipelineCounts.negotiation + pipelineCounts.revision} |
-                📄 Contract: ${pipelineCounts.contract}
+                <i class="fa-solid fa-inbox"></i> Leads: ${pipelineCounts.lead} |
+                <i class="fa-solid fa-check-circle"></i> Qualified: ${pipelineCounts.qualified} |
+                <i class="fa-solid fa-chart-bar"></i> Analyzed: ${pipelineCounts.analyzed} |
+                <i class="fa-solid fa-phone"></i> Follow-up: ${pipelineCounts.followup} |
+                <i class="fa-solid fa-file-signature"></i> Negotiation: ${pipelineCounts.negotiation + pipelineCounts.revision} |
+                <i class="fa-solid fa-file-contract"></i> Contract: ${pipelineCounts.contract}
             </span>`;
 
             let h = '';
@@ -364,8 +375,8 @@
                 const leadsTxt = Array.isArray(o.leads) ? `${o.leads[0]}-${o.leads[1]}` : o.leads;
                 h += `<div class="action-card ${!ok || lock ? 'disabled' : ''}" onclick="${ok && !lock ? `doMkt('${o.id}')` : ''}">
                     <div class="action-title">${o.name}</div><div class="action-cost">${o.desc}</div>
-                    <div style="margin-top:10px;">${o.time ? '<span class="time-badge">⏱️ ' + o.time + 'h</span>' : ''}<span class="cost-badge">💰 ${o.cost === 0 ? 'FREE' : '$' + o.cost}</span>
-                    <span class="time-badge">📥 ${leadsTxt}</span>${lock ? '<div class="locked-badge">Need $' + o.req + '</div>' : ''}</div></div>`;
+                    <div style="margin-top:10px;">${o.time ? '<span class="time-badge"><i class="fa-solid fa-clock"></i> ' + o.time + 'h</span>' : ''}<span class="cost-badge"><i class="fa-solid fa-dollar-sign"></i> ${o.cost === 0 ? 'FREE' : '$' + o.cost}</span>
+                    <span class="time-badge"><i class="fa-solid fa-inbox"></i> ${leadsTxt}</span>${lock ? '<div class="locked-badge">Need $' + o.req + '</div>' : ''}</div></div>`;
             });
 
             contact.forEach(o => {
@@ -375,8 +386,8 @@
                 const lockMsg = o.reqUpg && !g.upgrades[o.reqUpg] ? `Need ${upg[o.reqUpg].name}` : (o.req && g.cash < o.req ? '$' + o.cost : '');
                 h += `<div class="action-card ${!ok || lock ? 'disabled' : ''}" onclick="${ok && !lock ? `doContact('${o.id}')` : ''}">
                     <div class="action-title">${o.name}</div><div class="action-cost">${o.desc}</div>
-                    <div style="margin-top:10px;"><span class="time-badge">⏱️ ${o.time}h</span>
-                    <span class="cost-badge">💰 ${o.cost === 0 ? 'FREE' : '$' + o.cost}</span>${lock && lockMsg ? '<div class="locked-badge">' + lockMsg + '</div>' : ''}</div></div>`;
+                    <div style="margin-top:10px;"><span class="time-badge"><i class="fa-solid fa-clock"></i> ${o.time}h</span>
+                    <span class="cost-badge"><i class="fa-solid fa-dollar-sign"></i> ${o.cost === 0 ? 'FREE' : '$' + o.cost}</span>${lock && lockMsg ? '<div class="locked-badge">' + lockMsg + '</div>' : ''}</div></div>`;
             });
 
             acts.forEach(a => {
@@ -389,8 +400,8 @@
                 const highlight = adminRequired ? ' style="border: 3px solid #f56565; box-shadow: 0 0 20px rgba(245,101,101,0.5);"' : '';
                 const lockMsg = upgLocked ? `Need ${upg[a.reqUpg].name}` : '';
                 h += `<div class="action-card ${!ok || blocked || upgLocked ? 'disabled' : ''}" onclick="${ok && !blocked && !upgLocked ? `doAct('${a.id}')` : ''}"${highlight}>
-                    <div class="action-title">${a.name}${blocked ? ' 🔒' : ''}${upgLocked ? ' 🔒' : ''}${adminRequired ? ' ⚠️ URGENT' : ''}</div><div class="action-cost">${a.desc}</div>
-                    <div style="margin-top:10px;"><span class="time-badge">⏱️ ${a.time}h</span>${a.cost > 0 ? '<span class="cost-badge">💰 $' + a.cost + '</span>' : ''}${blocked ? '<div class="locked-badge">Admin work needed!</div>' : ''}${upgLocked && lockMsg ? '<div class="locked-badge">' + lockMsg + '</div>' : ''}</div></div>`;
+                    <div class="action-title">${a.name}${blocked ? ' <i class="fa-solid fa-lock"></i>' : ''}${upgLocked ? ' <i class="fa-solid fa-lock"></i>' : ''}${adminRequired ? ' <i class="fa-solid fa-exclamation-triangle"></i> URGENT' : ''}</div><div class="action-cost">${a.desc}</div>
+                    <div style="margin-top:10px;"><span class="time-badge"><i class="fa-solid fa-clock"></i> ${a.time}h</span>${a.cost > 0 ? '<span class="cost-badge"><i class="fa-solid fa-dollar-sign"></i> $' + a.cost + '</span>' : ''}${blocked ? '<div class="locked-badge">Admin work needed!</div>' : ''}${upgLocked && lockMsg ? '<div class="locked-badge">' + lockMsg + '</div>' : ''}</div></div>`;
             });
 
             grid.innerHTML = h;
@@ -637,7 +648,7 @@
                         });
 
                         g.deals = g.deals.filter(x => x.id !== p.id);
-                        notify(`${p.address} closed via Max! $${tot} (50% fee) 🎉`, 'advance');
+                        notify(`${p.address} closed via Max! $${tot} (50% fee)`, 'advance');
                         renderHire();
                         renderUpg();
                     }
@@ -651,7 +662,7 @@
             // Random chance (15%) to require admin work after property actions
             if (a.prop && Math.random() < 0.15 && !g.adminBlocked) {
                 g.adminBlocked = true;
-                notify('⚠️ Admin work piling up! Must complete admin tasks before continuing.', 'neutral');
+                notify('Admin work piling up! Must complete admin tasks before continuing.', 'neutral');
             }
 
             updateUI();
@@ -691,7 +702,7 @@
             });
 
             g.deals = g.deals.filter(x => x.id !== d.id);
-            notify(`${d.address} closed! $${tot} 🎉`, 'advance');
+            notify(`${d.address} closed! $${tot}`, 'advance');
             updateUI();
             renderDeals();
             renderHire();
@@ -714,14 +725,14 @@
 
             // Title system based on total profit
             const titles = [
-                { threshold: 0, title: '🌱 Rookie Wholesaler', color: '#718096' },
-                { threshold: 10000, title: '💼 Junior Deal Maker', color: '#4299e1' },
-                { threshold: 25000, title: '🎯 Skilled Wholesaler', color: '#48bb78' },
-                { threshold: 50000, title: '⭐ Expert Flipper', color: '#ed8936' },
-                { threshold: 100000, title: '💎 Master Wholesaler', color: '#9f7aea' },
-                { threshold: 250000, title: '👑 Elite Investor', color: '#f56565' },
-                { threshold: 500000, title: '🏆 Tycoon Legend', color: '#d69e2e' },
-                { threshold: 1000000, title: '🔥 Million Dollar Mogul', color: '#e53e3e' }
+                { threshold: 0, title: '<i class="fa-solid fa-seedling"></i> Rookie Wholesaler', color: '#718096' },
+                { threshold: 10000, title: '<i class="fa-solid fa-briefcase"></i> Junior Deal Maker', color: '#4299e1' },
+                { threshold: 25000, title: '<i class="fa-solid fa-bullseye"></i> Skilled Wholesaler', color: '#48bb78' },
+                { threshold: 50000, title: '<i class="fa-solid fa-star"></i> Expert Flipper', color: '#ed8936' },
+                { threshold: 100000, title: '<i class="fa-solid fa-gem"></i> Master Wholesaler', color: '#9f7aea' },
+                { threshold: 250000, title: '<i class="fa-solid fa-crown"></i> Elite Investor', color: '#f56565' },
+                { threshold: 500000, title: '<i class="fa-solid fa-trophy"></i> Tycoon Legend', color: '#d69e2e' },
+                { threshold: 1000000, title: '<i class="fa-solid fa-fire"></i> Million Dollar Mogul', color: '#e53e3e' }
             ];
 
             let currentTitle = titles[0];
@@ -737,9 +748,8 @@
 
             let html = `
                 <div class="card" style="text-align: center; background: linear-gradient(135deg, ${currentTitle.color}20 0%, ${currentTitle.color}10 100%); border: 3px solid ${currentTitle.color};">
-                    <div style="font-size: 48px; margin-bottom: 10px;">${currentTitle.title.split(' ')[0]}</div>
                     <div style="font-size: 28px; font-weight: bold; color: ${currentTitle.color}; margin-bottom: 10px;">
-                        ${currentTitle.title.substring(currentTitle.title.indexOf(' ') + 1)}
+                        ${currentTitle.title}
                     </div>
                     <div style="font-size: 16px; color: #718096; margin-bottom: 20px;">
                         Total Profit: <span style="color: #48bb78; font-weight: bold;">$${g.totalProfit.toLocaleString()}</span>
@@ -749,11 +759,11 @@
                         <div style="margin-top: 10px;"><div class="progress-bar" style="height: 12px;">
                             <div class="progress-fill" style="width: ${Math.min(100, (g.totalProfit / nextTitle.threshold) * 100)}%"></div>
                         </div></div>
-                    </div>` : '<div style="font-size: 14px; color: #48bb78; font-weight: bold;">🎉 MAX RANK ACHIEVED! 🎉</div>'}
+                    </div>` : '<div style="font-size: 14px; color: #48bb78; font-weight: bold;"><i class="fa-solid fa-trophy"></i> MAX RANK ACHIEVED! <i class="fa-solid fa-trophy"></i></div>'}
                 </div>
 
                 <div class="card" style="margin-top: 20px;">
-                    <div class="card-title">📊 Career Statistics</div>
+                    <div class="card-title"><i class="fa-solid fa-chart-bar"></i> Career Statistics</div>
                     <div class="info-row"><span class="info-label">Total Deals Closed:</span><span class="info-value">${g.dealsClosedTotal}</span></div>
                     <div class="info-row"><span class="info-label">Total Profit Earned:</span><span class="info-value" style="color: #48bb78;">$${g.totalProfit.toLocaleString()}</span></div>
                     <div class="info-row"><span class="info-label">Average Profit/Deal:</span><span class="info-value">$${avgProfit.toLocaleString()}</span></div>
@@ -762,9 +772,9 @@
                 </div>
 
                 <div class="card" style="margin-top: 20px;">
-                    <div class="card-title">📜 Deal History (Recent ${Math.min(10, g.closedDeals.length)})</div>
+                    <div class="card-title"><i class="fa-solid fa-scroll"></i> Deal History (Recent ${Math.min(10, g.closedDeals.length)})</div>
                     ${g.closedDeals.length === 0 ?
-                        '<div style="text-align: center; padding: 40px; color: #718096;"><div style="font-size: 48px; margin-bottom: 15px;">📭</div><div>No closed deals yet. Get out there and close some deals!</div></div>' :
+                        '<div style="text-align: center; padding: 40px; color: #718096;"><div style="font-size: 48px; margin-bottom: 15px;"><i class="fa-solid fa-folder-open"></i></div><div>No closed deals yet. Get out there and close some deals!</div></div>' :
                         '<div style="max-height: 400px; overflow-y: auto;">' +
                         g.closedDeals.slice().reverse().slice(0, 10).map(d => `
                             <div class="info-row" style="padding: 12px 0;">
@@ -876,7 +886,7 @@
                     }
                 });
                 if (g.cash < costs) {
-                    showMod('💸 Cash Crisis!', `<p style="color:#f56565;margin-bottom:15px;">Can't pay expenses!</p>
+                    showMod('<i class="fa-solid fa-hand-holding-dollar"></i> Cash Crisis!', `<p style="color:#f56565;margin-bottom:15px;">Can't pay expenses!</p>
                         <div class="info-row"><span class="info-label">Expenses:</span><span class="info-value">$${costs}</span></div>
                         <div class="info-row"><span class="info-label">Cash:</span><span class="info-value">$${g.cash}</span></div>`);
                     return;
@@ -963,7 +973,7 @@
         }
 
         function showMod(title, body) {
-            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalTitle').innerHTML = title;
             document.getElementById('modalBody').innerHTML = body;
             document.getElementById('modal').classList.add('active');
         }
