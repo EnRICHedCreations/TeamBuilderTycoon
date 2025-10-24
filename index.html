@@ -368,13 +368,37 @@
                 ]
             },
             revise: {
-                adjustment: [
+                newOffer: [
                     { text: "I've thought about your feedback. Here's an improved offer that addresses your concerns.", impact: { trust: 2 } },
-                    { text: "Fine, I'll go a bit higher, but this is my final offer.", impact: { trust: 0 } },
                     { text: "After running the numbers again, I can increase my offer slightly.", impact: { trust: 1 } },
-                    { text: "I spoke with my partner and we can make some adjustments to work with you.", impact: { trust: 2 } },
+                    { text: "Based on our conversation, here's a revised offer that's fair for both of us.", impact: { trust: 1 } },
+                    { text: "I spoke with my partner and we've agreed to improve the terms.", impact: { trust: 2 } },
+                    { text: "Here's my new number. I think you'll find this more reasonable.", impact: { trust: 1 } },
+                    { text: "This is the best I can do. Here's the revised offer.", impact: { trust: 0 } }
+                ],
+                compromise: [
+                    { text: "Let's meet in the middle. I can move up if you're flexible on the timeline.", impact: { trust: 2 } },
+                    { text: "What if we split the difference between my original offer and your asking price?", impact: { trust: 1 } },
+                    { text: "I'm willing to increase the price if you can handle some of the repairs.", impact: { trust: 1 } },
+                    { text: "Either you take this deal or I'm moving on to other properties.", impact: { trust: -3 } },
+                    { text: "I understand your position. Let's find a solution that works for both of us.", impact: { trust: 2 } },
+                    { text: "Can we find some creative terms that bridge the gap?", impact: { trust: 1 } }
+                ],
+                justification: [
+                    { text: "I've done my homework on comps. This revised number is more than fair given the market.", impact: { trust: 1 } },
+                    { text: "Look, I'm trying to work with you here. Most investors wouldn't budge at all.", impact: { trust: 0 } },
+                    { text: "This price accounts for all the repairs and updates the property needs.", impact: { trust: 1 } },
+                    { text: "You're not going to get a better offer than this. Trust me.", impact: { trust: -2 } },
+                    { text: "I've factored in your timeline and motivations. This is a win-win.", impact: { trust: 2 } },
+                    { text: "The numbers work at this price point. Let me show you my breakdown.", impact: { trust: 1 } }
+                ],
+                closing: [
+                    { text: "I really want to make this work. Can we move forward with this revised offer?", impact: { trust: 2 } },
+                    { text: "Final offer. Yes or no?", impact: { trust: -1 } },
+                    { text: "I've done everything I can on my end. What do you say?", impact: { trust: 1 } },
                     { text: "Take it or leave it. I've already given you more than I should have.", impact: { trust: -2 } },
-                    { text: "Based on our conversation, here's a revised offer that's fair for both of us.", impact: { trust: 1 } }
+                    { text: "This is my absolute best. Can we shake on it?", impact: { trust: 1 } },
+                    { text: "I believe this is fair for both of us. Are you ready to move forward?", impact: { trust: 2 } }
                 ]
             }
         };
@@ -797,7 +821,7 @@
             if (currentSeller.action === 'negotiate') {
                 availableCategories = ['pushback', 'objection'];
             } else if (currentSeller.action === 'revise') {
-                availableCategories = ['adjustment'];
+                availableCategories = ['newOffer', 'compromise', 'justification', 'closing'];
             } else {
                 // 'show' action
                 if (currentSeller.turn === 1) {
@@ -943,13 +967,37 @@
                 } else {
                     response = "Okay, I'm listening...";
                 }
-            } else if (category === 'adjustment') {
+            } else if (category === 'newOffer') {
                 if (trustChange > 1) {
-                    response = "Thank you for being flexible. Let me review this new offer.";
+                    response = "Thank you for coming back with a better number. Let me look this over.";
                 } else if (trustChange < 0) {
-                    response = "This still doesn't feel right to me.";
+                    response = "Is this really your best? I was expecting more movement.";
                 } else {
-                    response = "Alright, I'll consider it.";
+                    response = "Okay, this is closer to what I had in mind.";
+                }
+            } else if (category === 'compromise') {
+                if (trustChange > 1) {
+                    response = "I appreciate you working with me on this. That sounds more reasonable.";
+                } else if (trustChange < -1) {
+                    response = "Wow, that's pretty aggressive. I don't appreciate being pressured.";
+                } else {
+                    response = "Hmm, let me think about that compromise...";
+                }
+            } else if (category === 'justification') {
+                if (trustChange > 1) {
+                    response = "I see your point. That makes sense when you explain it that way.";
+                } else if (trustChange < 0) {
+                    response = "You're just trying to justify a low offer. I'm not convinced.";
+                } else {
+                    response = "I understand the numbers, but it's still hard to accept.";
+                }
+            } else if (category === 'closing') {
+                if (trustChange > 1) {
+                    response = "You've been fair through this process. I think we can make this work.";
+                } else if (trustChange < 0) {
+                    response = "Don't push me. I need time to think about it.";
+                } else {
+                    response = "Let me sleep on it and I'll get back to you.";
                 }
             } else {
                 response = "I see... let me think about that.";
