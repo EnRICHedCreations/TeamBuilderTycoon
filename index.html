@@ -283,8 +283,8 @@
 
         const teams = {
             va: { name: 'Virtual Assistant', role: 'VA', cost: 800, time: 20, desc: '+20h/week, generates 12 leads weekly (starts 50% efficient)', eff: 50, mor: 100, leads: 12, reqC: 2400, reqD: 2 },
-            acq: { name: 'Acquisitions Manager', role: 'Acq', cost: 2500, time: 15, desc: '+15h/week for deal processing capacity', eff: 50, mor: 100, deals: 3, reqC: 7500, reqD: 4 },
-            dis: { name: 'Dispositions', role: 'Dis', cost: 2000, time: 10, desc: '+10h/week, adds $2,000 bonus to every closed deal', eff: 50, mor: 100, bonus: 2000, reqC: 6000, reqD: 5 }
+            acq: { name: 'Acquisitions Manager', role: 'Acq', cost: 2500, time: 15, desc: '+15h/week, automatically processes 3-5 qualified leads through pipeline weekly (40% success rate, starts 50% efficient)', eff: 50, mor: 100, deals: 3, reqC: 7500, reqD: 4 },
+            dis: { name: 'Dispositions', role: 'Dis', cost: 2000, time: 10, desc: '+10h/week, automatically closes 2-3 contracts weekly (60% success rate, starts 50% efficient), adds $2,000 bonus per deal', eff: 50, mor: 100, bonus: 2000, reqC: 6000, reqD: 5 }
         };
 
         const acts = [
@@ -1487,12 +1487,76 @@
             }
 
             g.team.forEach(m => { if (m.eff < 100) m.eff = Math.min(100, m.eff + 10); });
+
+            // VAs generate leads
             g.team.forEach(m => {
                 if (m.role === 'VA' && m.leads) {
                     const l = Math.floor(m.leads * (m.eff / 100));
                     if (l > 0) {
                         genLeads(l);
                         notify(`${m.name}: ${l} leads!`, 'advance');
+                    }
+                }
+            });
+
+            // Acquisitions Managers process deals through pipeline
+            g.team.forEach(m => {
+                if (m.role === 'Acq' && m.deals) {
+                    const efficiency = (m.eff / 100);
+                    const dealsToProcess = Math.floor(Math.random() * 3) + 3; // 3-5 deals
+                    const successRate = 0.40 * efficiency; // 40% base success rate * efficiency
+
+                    // Get qualified leads to process
+                    const qualifiedLeads = g.deals.filter(d => d.stage === 'qualified');
+                    const toProcess = qualifiedLeads.slice(0, dealsToProcess);
+
+                    let processed = 0;
+                    toProcess.forEach(deal => {
+                        if (Math.random() < successRate) {
+                            // Successfully move through entire pipeline to contract
+                            deal.stage = 'contract';
+                            processed++;
+                        } else {
+                            // Partial progress or failure
+                            const roll = Math.random();
+                            if (roll < 0.5) {
+                                deal.stage = 'analyzed';
+                            } else if (roll < 0.7) {
+                                deal.stage = 'negotiation';
+                            } else {
+                                // Deal fell through
+                                g.deals = g.deals.filter(d => d.id !== deal.id);
+                            }
+                        }
+                    });
+
+                    if (processed > 0) {
+                        notify(`${m.name}: ${processed} deal${processed > 1 ? 's' : ''} ready to close!`, 'advance');
+                    }
+                }
+            });
+
+            // Dispositions automatically close contracts
+            g.team.forEach(m => {
+                if (m.role === 'Dis') {
+                    const efficiency = (m.eff / 100);
+                    const dealsToClose = Math.floor(Math.random() * 2) + 2; // 2-3 deals
+                    const successRate = 0.60 * efficiency; // 60% base success rate * efficiency
+
+                    // Get contracts ready to close
+                    const contracts = g.deals.filter(d => d.stage === 'contract');
+                    const toClose = contracts.slice(0, dealsToClose);
+
+                    let closed = 0;
+                    toClose.forEach(deal => {
+                        if (Math.random() < successRate) {
+                            closeDeal(deal);
+                            closed++;
+                        }
+                    });
+
+                    if (closed > 0) {
+                        notify(`${m.name}: Closed ${closed} deal${closed > 1 ? 's' : ''}!`, 'advance');
                     }
                 }
             });
