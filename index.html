@@ -175,6 +175,23 @@
             </div>
         </div>
     </div>
+    <div id="sellerModal" class="modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-title" id="sellerModalTitle"><i class="fa-solid fa-phone"></i> Calling Seller...</div>
+            <div id="sellerModalBody" style="max-height: 400px; overflow-y: auto;">
+                <div id="sellerPersona" style="background: #252525; padding: 10px; border-radius: 6px; margin-bottom: 15px; font-size: 13px; color: var(--text-faded);"></div>
+                <div id="sellerDialogue" style="margin-bottom: 20px;"></div>
+                <div id="sellerMCTP" style="background: #252525; padding: 10px; border-radius: 6px; margin-bottom: 15px; font-size: 13px;">
+                    <div style="font-weight: 600; margin-bottom: 8px; color: var(--text-light);">Info Gathered:</div>
+                    <div id="mctpStatus"></div>
+                </div>
+                <div id="sellerChoices"></div>
+            </div>
+            <div class="modal-buttons">
+                <button class="button button-danger" id="endCallBtn">End Call</button>
+            </div>
+        </div>
+    </div>
     <div id="tutorialModal" class="modal">
         <div class="modal-content" style="max-width: 700px;">
             <div class="modal-title"><i class="fa-solid fa-graduation-cap"></i> How to Play Team Builder Tycoon</div>
@@ -205,9 +222,10 @@
                     <h3 style="color: #ad9051; margin-bottom: 10px; font-size: 16px;"><i class="fa-solid fa-chart-line"></i> Early Game Strategy</h3>
                     <ul style="color: var(--text-faded); line-height: 1.8; margin-left: 20px;">
                         <li>Pull free government lists repeatedly (25% chance of 1 lead)</li>
-                        <li>Cold call or text leads to qualify them (15-20% success)</li>
+                        <li>Cold call leads to qualify them (10-15% success rate)</li>
+                        <li>Consider Premium Gov List ($75) for 1-3 guaranteed leads</li>
                         <li>Move qualified leads through the pipeline</li>
-                        <li>Expect 15-25 hours of work for your first deal</li>
+                        <li>Expect 20-30 hours of work for your first deal</li>
                         <li>Deals can fall through at any stage - maintain a healthy funnel!</li>
                     </ul>
                 </div>
@@ -221,7 +239,7 @@
                     <p style="color: var(--text-light); font-weight: 600; margin-bottom: 8px;"><i class="fa-solid fa-lightbulb"></i> Pro Tips</p>
                     <ul style="color: var(--text-faded); line-height: 1.8; margin-left: 20px; font-size: 14px;">
                         <li>Check pipeline counters in the Actions tab title</li>
-                        <li>Close the game - VAs generate leads while you're offline (8h max)</li>
+                        <li>VAs generate leads offline (1h minimum, 8h max)</li>
                         <li>Premium Gov List ($75) gives guaranteed 1-3 leads</li>
                         <li>Pay Per Lead ($200) skips straight to Analyzed stage</li>
                         <li>Watch your cash - team costs are due every 4 weeks</li>
@@ -238,6 +256,7 @@
         let sel = null, pend = null;
         let notifQueue = [], notifActive = false;
         let autoAdvancing = false;
+        let currentSeller = null;
 
         const mkOpts = [
             { id: 'gov', name: 'Pull Government List', cost: 0, leads: 0.25, desc: 'Free public records (low yield)', time: 0.5 },
@@ -247,17 +266,15 @@
         ];
 
         const contact = [
-            { id: 'call', name: 'Cold Call Single Lead', time: 0.5, cost: 0, desc: 'Call 1 lead', cnt: 1, rate: [0.15, 0.20] },
+            { id: 'call', name: 'Cold Call Single Lead', time: 0.5, cost: 0, desc: 'Call 1 lead', cnt: 1, rate: [0.10, 0.15] },
             { id: 'text', name: 'Text Single Lead', time: 0.1, cost: 2, desc: 'Text 1 lead ($2)', cnt: 1, rate: [0.05, 0.08] },
             { id: 'batchCall', name: 'Batch Call (5 leads)', time: 2, cost: 0, desc: 'Call 5 leads at once', cnt: 5, rate: [0.15, 0.20], reqUpg: 'batchDialer' },
-            { id: 'rvm', name: 'Send RVMs', time: 0.5, cost: 50, desc: '100 RVMs ($50)', cnt: 100, rate: [0.01, 0.03], reqUpg: 'rvm' },
             { id: 'textBlast', name: 'Text Blast Campaign', time: 1, cost: 200, desc: '1000 texts ($200)', cnt: 1000, rate: [0.03, 0.08], reqUpg: 'textDrip' }
         ];
 
         const upg = {
             skipTrace: { name: 'Skip Trace Tool', cost: 1000, ben: 'Government lists give 2-5 leads instead of base amount', type: 'marketing', reqD: 3 },
             batchDialer: { name: 'Batch Dialer', cost: 2500, ben: 'Unlock batch calling (5 leads at once)', type: 'call', reqD: 5 },
-            rvm: { name: 'RVM (Ringless Voicemail)', cost: 1500, ben: 'Send 100 RVMs for $50 (1-3% success rate)', type: 'call', reqD: 4 },
             xleads: { name: 'XLeads Software', cost: 5000, ben: 'Government lists give 10-20 leads', type: 'marketing', reqD: 12 },
             textDrip: { name: 'Text Drip Campaign', cost: 3000, ben: 'Unlock text blast (1000 texts, 3-8% success)', type: 'text', reqD: 15 },
             enzo: { name: 'Enzo Power Dialer', cost: 8000, ben: '+30h/week + unlock power dialing', type: 'call', monthly: 225, reqD: 20 },
@@ -272,18 +289,76 @@
 
         const acts = [
             { id: 'analyze', name: 'Analyze Property', time: 1.5, cost: 0, desc: 'Run comps', prop: true, stage: 'qualified' },
-            { id: 'show', name: 'Call/Meet with Seller', time: 2, cost: 0, desc: 'Meet seller', prop: true, stage: 'analyzed' },
+            { id: 'show', name: 'Call/Meet with Seller', time: 2, cost: 0, desc: 'Meet seller', prop: true, stage: 'analyzed', interactive: true },
             { id: 'follow', name: 'Follow Up', time: 1, cost: 0, desc: 'Build rapport', prop: true, stage: 'followup' },
-            { id: 'negotiate', name: 'Negotiate', time: 3, cost: 0, desc: 'Work terms', prop: true, stage: 'negotiation' },
-            { id: 'revise', name: 'Revise Offer', time: 1, cost: 0, desc: 'New offer', prop: true, stage: 'revision' },
+            { id: 'negotiate', name: 'Negotiate', time: 3, cost: 0, desc: 'Work terms', prop: true, stage: 'negotiation', interactive: true },
+            { id: 'revise', name: 'Revise Offer', time: 1, cost: 0, desc: 'New offer', prop: true, stage: 'revision', interactive: true },
             { id: 'buyers', name: 'Contact Buyers', time: 4, cost: 0, desc: 'Reach buyers', prop: true, stage: 'contract' },
             { id: 'maxdispo', name: 'Dispo with MaxDispo.com', time: 0.5, cost: 0, desc: 'Quick close (50% fee)', prop: true, stage: 'contract', minVal: 8000, reqUpg: 'maxd' },
             { id: 'admin', name: 'Admin Tasks', time: 2, cost: 0, desc: 'Paperwork', prop: false }
         ];
 
+        const sellerPersonas = [
+            { id: 'skeptical', name: 'Skeptical Seller', desc: 'Cautious and wants proof of credibility', trust: 3 },
+            { id: 'emotional', name: 'Emotional Seller', desc: 'Attached to the property, needs empathy', trust: 5 },
+            { id: 'rushed', name: 'Rushed Seller', desc: 'In a hurry, values efficiency', trust: 4 },
+            { id: 'motivated', name: 'Motivated Seller', desc: 'Eager to sell, flexible on terms', trust: 7 },
+            { id: 'analytical', name: 'Analytical Seller', desc: 'Data-driven, wants facts and figures', trust: 4 }
+        ];
+
+        const dialogueScenarios = {
+            show: {
+                opening: [
+                    { text: "Hi, I appreciate you taking my call. I understand you're looking to sell your property?", impact: { trust: 1 } },
+                    { text: "Hello! I'm a real estate investor and I want to buy your house. What's your bottom line?", impact: { trust: -2 } },
+                    { text: "Hey, I saw your property listing. Tell me what's wrong with it and why you need to sell fast.", impact: { trust: -1 } }
+                ],
+                motivation: [
+                    { text: "What's prompting you to sell at this time?", impact: { trust: 1, reveals: 'M' } },
+                    { text: "Are you just testing the market or do you actually need to sell?", impact: { trust: -1 } },
+                    { text: "I understand transitions can be challenging. What's your situation?", impact: { trust: 2, reveals: 'M' } }
+                ],
+                condition: [
+                    { text: "Can you tell me about the condition of the property? Any major repairs needed?", impact: { trust: 1, reveals: 'C' } },
+                    { text: "I'll need to inspect it myself, but what issues should I know about?", impact: { trust: 0, reveals: 'C' } },
+                    { text: "How much money have you had to sink into repairs lately?", impact: { trust: -1 } }
+                ],
+                timeline: [
+                    { text: "What's your ideal timeline for closing?", impact: { trust: 1, reveals: 'T' } },
+                    { text: "How quickly do you need this done?", impact: { trust: 0, reveals: 'T' } },
+                    { text: "I can close fast if the price is right. When do you need out?", impact: { trust: -1, reveals: 'T' } }
+                ],
+                price: [
+                    { text: "What price range were you hoping for?", impact: { trust: 0, reveals: 'P' } },
+                    { text: "Based on condition and comps, I'm thinking around a certain amount. Does that work for you?", impact: { trust: 1, reveals: 'P' } },
+                    { text: "I need to make a profit here. What's your absolute lowest number?", impact: { trust: -2 } }
+                ]
+            },
+            negotiate: {
+                pushback: [
+                    { text: "I understand your concerns. Let me see if we can find a middle ground that works for both of us.", impact: { trust: 2 } },
+                    { text: "That's my offer. Take it or leave it.", impact: { trust: -3 } },
+                    { text: "I hear you. What if we adjust the closing timeline to give you more flexibility?", impact: { trust: 1 } }
+                ],
+                objection: [
+                    { text: "I completely understand. What would make this work better for you?", impact: { trust: 2 } },
+                    { text: "Look, this is a fair offer based on the market. You won't get better.", impact: { trust: -2 } },
+                    { text: "Let me explain how I arrived at this number...", impact: { trust: 1 } }
+                ]
+            },
+            revise: {
+                adjustment: [
+                    { text: "I've thought about your feedback. Here's an improved offer that addresses your concerns.", impact: { trust: 2 } },
+                    { text: "Fine, I'll go a bit higher, but this is my final offer.", impact: { trust: 0 } },
+                    { text: "After running the numbers again, I can increase my offer slightly.", impact: { trust: 1 } }
+                ]
+            }
+        };
+
         function calcOfflineProgress() {
             if (!g.lastPlayTime) {
                 g.lastPlayTime = Date.now();
+                save(); // Save immediately to prevent exploit
                 return null;
             }
 
@@ -294,7 +369,8 @@
             // Cap offline progress at 8 hours
             const effectiveHours = Math.min(hoursAway, 8);
 
-            if (effectiveHours < 0.5) return null; // Ignore if less than 30 minutes
+            // Require at least 1 hour away to prevent refresh exploit
+            if (effectiveHours < 1.0) return null;
 
             let leadsGenerated = 0;
             let dealsProcessed = 0;
@@ -398,6 +474,7 @@
             document.getElementById('cancelPropertyBtn').addEventListener('click', closePropMod);
             document.getElementById('closeTutorialBtn').addEventListener('click', closeTutorial);
             document.getElementById('showTutorialBtn').addEventListener('click', showTutorial);
+            document.getElementById('endCallBtn').addEventListener('click', () => endSellerCall(false));
             renderActs();
             renderTeam();
             renderHire();
@@ -559,11 +636,9 @@
 
             let q = 0;
 
-            // For single contacts, use probability; for batches, use rate multiplication
-            if (toContact === 1) {
-                q = Math.random() < r ? 1 : 0;
-            } else {
-                q = Math.floor(toContact * r);
+            // Check each contact individually with probability
+            for (let i = 0; i < toContact; i++) {
+                if (Math.random() < r) q++;
             }
 
             if (q > 0) {
@@ -600,6 +675,317 @@
             }
         }
 
+        function startSellerInteraction(action, property) {
+            const persona = sellerPersonas[Math.floor(Math.random() * sellerPersonas.length)];
+            currentSeller = {
+                action: action.id,
+                property: property,
+                persona: persona,
+                trust: persona.trust,
+                mctp: { M: false, C: false, T: false, P: false },
+                turn: 0,
+                dialogue: []
+            };
+
+            // Clear previous dialogue history
+            document.getElementById('sellerDialogue').innerHTML = '';
+            document.getElementById('sellerPersona').textContent = `${persona.name} - ${persona.desc}`;
+
+            // Update modal title based on action
+            const titles = {
+                'show': '<i class="fa-solid fa-phone"></i> Calling Seller...',
+                'negotiate': '<i class="fa-solid fa-handshake"></i> Negotiating Terms...',
+                'revise': '<i class="fa-solid fa-file-pen"></i> Revising Offer...'
+            };
+            document.getElementById('sellerModalTitle').innerHTML = titles[action.id] || '<i class="fa-solid fa-phone"></i> Calling Seller...';
+
+            updateMCTPDisplay();
+            showNextDialogueChoice();
+            document.getElementById('sellerModal').classList.add('active');
+        }
+
+        function updateMCTPDisplay() {
+            const mctp = currentSeller.mctp;
+            const mctpCount = Object.values(mctp).filter(v => v).length;
+            const status = `
+                <div style="font-size: 11px; color: var(--text-faded); margin-bottom: 8px;">
+                    M=Motivation, C=Condition, T=Timeline, P=Price (Need 3/4 + Trust ≥3)
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
+                    <div style="text-align: center;">
+                        <div style="font-weight: 600; color: ${mctp.M ? '#48bb78' : '#f56565'};">M</div>
+                        <div style="font-size: 11px;">${mctp.M ? 'Found' : 'Missing'}</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-weight: 600; color: ${mctp.C ? '#48bb78' : '#f56565'};">C</div>
+                        <div style="font-size: 11px;">${mctp.C ? 'Found' : 'Missing'}</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-weight: 600; color: ${mctp.T ? '#48bb78' : '#f56565'};">T</div>
+                        <div style="font-size: 11px;">${mctp.T ? 'Found' : 'Missing'}</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-weight: 600; color: ${mctp.P ? '#48bb78' : '#f56565'};">P</div>
+                        <div style="font-size: 11px;">${mctp.P ? 'Found' : 'Missing'}</div>
+                    </div>
+                </div>
+                <div style="margin-top: 8px; text-align: center; font-size: 12px; font-weight: 600; color: ${mctpCount >= 3 && currentSeller.trust >= 3 ? '#48bb78' : '#f56565'};">
+                    Status: ${mctpCount}/4 MCTP | Trust: ${currentSeller.trust}
+                </div>
+            `;
+            document.getElementById('mctpStatus').innerHTML = status;
+        }
+
+        function showNextDialogueChoice() {
+            currentSeller.turn++;
+            const scenarios = dialogueScenarios[currentSeller.action];
+
+            // Determine available categories based on action type
+            let availableCategories;
+            if (currentSeller.action === 'negotiate') {
+                availableCategories = ['pushback', 'objection'];
+            } else if (currentSeller.action === 'revise') {
+                availableCategories = ['adjustment'];
+            } else {
+                // 'show' action
+                if (currentSeller.turn === 1) {
+                    availableCategories = ['opening'];
+                } else {
+                    availableCategories = ['motivation', 'condition', 'timeline', 'price'];
+                }
+            }
+
+            const category = availableCategories[Math.floor(Math.random() * availableCategories.length)];
+            const choices = scenarios[category];
+
+            // Safety check
+            if (!choices || !Array.isArray(choices)) {
+                console.error('No dialogue choices found for action:', currentSeller.action, 'category:', category);
+                endSellerCall(true);
+                return;
+            }
+
+            let choicesHTML = '<div style="margin-bottom: 10px; font-weight: 600; color: var(--text-light);">Choose your response:</div>';
+            choices.forEach((choice, idx) => {
+                choicesHTML += `<div class="property-option" onclick="selectDialogueChoice(${idx}, '${category}')" style="cursor: pointer; margin-bottom: 10px;">
+                    <div style="line-height: 1.6;">${choice.text}</div>
+                </div>`;
+            });
+
+            document.getElementById('sellerChoices').innerHTML = choicesHTML;
+        }
+
+        function selectDialogueChoice(index, category) {
+            if (!currentSeller) return; // Safety check
+
+            // Disable all choices immediately to prevent double-clicking
+            document.getElementById('sellerChoices').innerHTML = '<div style="color: #718096; padding: 10px;">Processing...</div>';
+
+            const scenarios = dialogueScenarios[currentSeller.action];
+            const choice = scenarios[category][index];
+
+            // Apply impact
+            currentSeller.trust += choice.impact.trust || 0;
+            if (choice.impact.reveals) {
+                currentSeller.mctp[choice.impact.reveals] = true;
+            }
+
+            // Add to dialogue history
+            currentSeller.dialogue.push({ player: choice.text, trust: currentSeller.trust });
+
+            // Generate contextual seller response
+            let response = "";
+            const trustChange = choice.impact.trust || 0;
+
+            if (category === 'opening') {
+                if (trustChange > 0) {
+                    response = "Thank you for being professional. Yes, I am considering selling.";
+                } else if (trustChange < 0) {
+                    response = "Whoa, slow down there. I'm not sure I'm comfortable with this approach...";
+                } else {
+                    response = "Okay... what do you need to know?";
+                }
+            } else if (category === 'motivation') {
+                if (choice.impact.reveals === 'M') {
+                    const reasons = [
+                        "We're relocating for work and need to move quickly.",
+                        "I inherited this property and don't want to deal with it.",
+                        "It's becoming too much to maintain at my age.",
+                        "We're downsizing and this place is too big now."
+                    ];
+                    response = reasons[Math.floor(Math.random() * reasons.length)];
+                } else {
+                    response = "I don't think that's really relevant to our discussion.";
+                }
+            } else if (category === 'condition') {
+                if (choice.impact.reveals === 'C') {
+                    const conditions = [
+                        "The roof needs some work, and the HVAC is original from the 80s.",
+                        "It's in decent shape, mostly cosmetic updates needed.",
+                        "There's some foundation cracking and plumbing issues.",
+                        "Pretty good condition overall, just needs paint and flooring."
+                    ];
+                    response = conditions[Math.floor(Math.random() * conditions.length)];
+                } else if (trustChange < 0) {
+                    response = "I already told you there are some issues. Why are you being pushy?";
+                } else {
+                    response = "Sure, you can inspect it yourself.";
+                }
+            } else if (category === 'timeline') {
+                if (choice.impact.reveals === 'T') {
+                    const timelines = [
+                        "Ideally within 30 days if possible.",
+                        "As soon as we can - we're already moved out.",
+                        "No huge rush, but within 60 days would be great.",
+                        "We need to close before the end of next month."
+                    ];
+                    response = timelines[Math.floor(Math.random() * timelines.length)];
+                } else if (trustChange < 0) {
+                    response = "You seem more focused on your timeline than mine...";
+                } else {
+                    response = "Pretty soon, but it depends on the offer.";
+                }
+            } else if (category === 'price') {
+                if (choice.impact.reveals === 'P') {
+                    const priceMin = currentSeller.property.value * 1.2;
+                    const priceMax = currentSeller.property.value * 1.4;
+                    response = `I was hoping to get somewhere between $${Math.floor(priceMin/1000)}k and $${Math.floor(priceMax/1000)}k.`;
+                } else if (trustChange < -1) {
+                    response = "Look, if you're just trying to lowball me, we're done here.";
+                } else {
+                    response = "I'm flexible on price if everything else makes sense.";
+                }
+            } else if (category === 'pushback') {
+                if (trustChange > 1) {
+                    response = "Okay, I appreciate you working with me. Let's talk about it.";
+                } else if (trustChange < 0) {
+                    response = "That attitude isn't helping. Maybe I should talk to other buyers.";
+                } else {
+                    response = "Alright... but I still think my number is fair.";
+                }
+            } else if (category === 'objection') {
+                if (trustChange > 1) {
+                    response = "I appreciate you listening. Maybe we can adjust the terms or timeline?";
+                } else if (trustChange < 0) {
+                    response = "You're not hearing me. This isn't working.";
+                } else {
+                    response = "Okay, I'm listening...";
+                }
+            } else if (category === 'adjustment') {
+                if (trustChange > 1) {
+                    response = "Thank you for being flexible. Let me review this new offer.";
+                } else if (trustChange < 0) {
+                    response = "This still doesn't feel right to me.";
+                } else {
+                    response = "Alright, I'll consider it.";
+                }
+            } else {
+                response = "I see... let me think about that.";
+            }
+
+            const dialogueDiv = document.getElementById('sellerDialogue');
+            dialogueDiv.innerHTML += `
+                <div style="margin-bottom: 15px;">
+                    <div style="background: #2563eb20; padding: 10px; border-radius: 6px; margin-bottom: 8px;">
+                        <strong>You:</strong> ${choice.text}
+                    </div>
+                    <div style="background: #25252520; padding: 10px; border-radius: 6px;">
+                        <strong>Seller:</strong> ${response}
+                    </div>
+                </div>
+            `;
+            dialogueDiv.scrollTop = dialogueDiv.scrollHeight;
+
+            updateMCTPDisplay();
+
+            // Check if call failed (trust too low)
+            if (currentSeller.trust <= 0) {
+                setTimeout(() => endSellerCall(true), 1000);
+                return;
+            }
+
+            // Continue or end based on turn count
+            if (currentSeller.turn >= 5) {
+                setTimeout(() => endSellerCall(false), 1000);
+            } else {
+                setTimeout(showNextDialogueChoice, 500);
+            }
+        }
+
+        function endSellerCall(failed) {
+            if (!currentSeller) return; // Safety check
+
+            document.getElementById('sellerModal').classList.remove('active');
+
+            if (failed) {
+                g.deals = g.deals.filter(d => d.id !== currentSeller.property.id);
+                notify(`Call failed! Seller lost trust.`);
+                currentSeller = null;
+                updateUI();
+                renderDeals();
+                renderActs();
+                save();
+                return;
+            }
+
+            // Calculate success based on MCTP gathered
+            const mctpCount = Object.values(currentSeller.mctp).filter(v => v).length;
+            const success = mctpCount >= 3 && currentSeller.trust >= 3;
+
+            if (success) {
+                // Original success logic from execAct
+                const p = currentSeller.property;
+                if (currentSeller.action === 'show') {
+                    const showRoll = Math.random();
+                    if (showRoll < 0.30) {
+                        p.stage = 'negotiation';
+                        notify(`${p.address} interested!`, 'advance');
+                    } else if (showRoll < 0.80) {
+                        p.stage = 'followup';
+                        notify(`${p.address} needs time.`);
+                    } else {
+                        g.deals = g.deals.filter(d => d.id !== p.id);
+                        notify(`${p.address} fell through.`);
+                    }
+                } else if (currentSeller.action === 'negotiate') {
+                    const negRoll = Math.random();
+                    if (negRoll < 0.25) {
+                        p.stage = 'contract';
+                        notify(`${p.address} signed!`, 'advance');
+                    } else if (negRoll < 0.85) {
+                        p.stage = 'revision';
+                        notify(`${p.address} needs better offer (will reduce profit).`);
+                    } else {
+                        g.deals = g.deals.filter(d => d.id !== p.id);
+                        notify(`${p.address} fell through.`);
+                    }
+                } else if (currentSeller.action === 'revise') {
+                    // 15-25% chance to fail
+                    const reviseRoll = Math.random();
+                    const failChance = 0.15 + Math.random() * 0.10; // Random between 15-25%
+
+                    if (reviseRoll < failChance) {
+                        g.deals = g.deals.filter(d => d.id !== p.id);
+                        notify(`${p.address} rejected revised offer and fell through!`);
+                    } else {
+                        const reduction = Math.floor(p.value * (0.20 + Math.random() * 0.10));
+                        const oldVal = p.value;
+                        p.value = Math.max(1000, p.value - reduction);
+                        p.stage = 'contract';
+                        notify(`${p.address} accepted! (Profit reduced: $${oldVal} → $${p.value})`, 'advance');
+                    }
+                }
+            } else {
+                notify(`Call incomplete. Need more MCTP info (${mctpCount}/4) and trust (${currentSeller.trust}/3).`);
+            }
+
+            currentSeller = null;
+            updateUI();
+            renderDeals();
+            renderActs();
+            save();
+        }
+
         function showPropModal(a) {
             let deals = g.deals.filter(d => d.stage === a.stage);
             if (a.minVal) deals = deals.filter(d => d.value >= a.minVal);
@@ -627,9 +1013,32 @@
 
         function confirmProp() {
             if (!sel || !pend) return;
-            execAct(pend, sel);
-            closePropMod();
+
+            // Store references before closing modal (closePropMod clears them)
+            const action = pend;
+            const property = sel;
+
+            // Check if this is an interactive action
+            if (action.interactive) {
+                // 50% chance to trigger interactive dialogue
+                if (Math.random() < 0.5) {
+                    g.timeLeft -= action.time;
+                    g.cash -= action.cost;
+                    closePropMod();
+                    startSellerInteraction(action, property);
+                } else {
+                    // Use original logic without dialogue
+                    execAct(action, property);
+                    closePropMod();
+                }
+            } else {
+                execAct(action, property);
+                closePropMod();
+            }
         }
+
+        // Make selectDialogueChoice available globally for onclick
+        window.selectDialogueChoice = selectDialogueChoice;
 
         function closePropMod() {
             document.getElementById('propertyModal').classList.remove('active');
@@ -680,13 +1089,21 @@
                     }
                     break;
                 case 'revise':
-                    // Reduce profit by 20-30% and advance to contract
+                    // 15-25% chance to fail and fall through
                     if (p) {
-                        const reduction = Math.floor(p.value * (0.20 + Math.random() * 0.10));
-                        const oldVal = p.value;
-                        p.value = Math.max(1000, p.value - reduction);
-                        p.stage = 'contract';
-                        notify(`${p.address} accepted! (Profit reduced: $${oldVal} → $${p.value})`, 'advance');
+                        const reviseRoll = Math.random();
+                        const failChance = 0.15 + Math.random() * 0.10; // Random between 15-25%
+
+                        if (reviseRoll < failChance) {
+                            g.deals = g.deals.filter(d => d.id !== p.id);
+                            notify(`${p.address} rejected revised offer and fell through!`);
+                        } else {
+                            const reduction = Math.floor(p.value * (0.20 + Math.random() * 0.10));
+                            const oldVal = p.value;
+                            p.value = Math.max(1000, p.value - reduction);
+                            p.stage = 'contract';
+                            notify(`${p.address} accepted! (Profit reduced: $${oldVal} → $${p.value})`, 'advance');
+                        }
                     }
                     break;
                 case 'negotiate':
@@ -1017,7 +1434,7 @@
             document.getElementById('cash').textContent = g.cash.toLocaleString();
             document.getElementById('week').textContent = g.week;
             document.getElementById('dealsCount').textContent = g.dealsClosedTotal;
-            document.getElementById('timeLeft').textContent = g.timeLeft;
+            document.getElementById('timeLeft').textContent = g.timeLeft.toFixed(2);
 
             // Auto-advance to next week if time runs out
             if (g.timeLeft <= 0 && !autoAdvancing) {
@@ -1091,4 +1508,3 @@
     </script>
 </body>
 </html>
-
